@@ -137,11 +137,11 @@ void ftrl_trainer::train(int y, const vector<pair<string, double> > &x)
     ftrl_model_unit *thetaBias = pModel->getOrInitModelUnitBias();
     vector<ftrl_model_unit *> theta(x.size(), nullptr);
     int xLen = x.size();
-    for (int i = 0; i <= xLen; ++i) {
-        string index = x[i].first;
+    for (int i = 0; i < xLen; ++i) {
+        const string &index = x[i].first;
         theta[i] = pModel->getOrInitModelUnit(index);
     }
-    for (int i = 0; i < xLen; ++i) {
+    for (int i = 0; i <= xLen; ++i) {
         ftrl_model_unit &mu = i < xLen ? *(theta[i]) : *thetaBias;
         mu.mtx.lock();
         if (fabs(mu.w_zi) <= w_l1)
