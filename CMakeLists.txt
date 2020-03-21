@@ -8,7 +8,7 @@ aux_source_directory(. DIR_SRCS)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ./bin)
 add_executable(lr_train lr_train.cpp src/threading/pc_threading.cpp src/utils/utils.cpp)
-# add_executable(lr_pred lr_predict.cpp src/threading/pc_threading.cpp src/utils/utils.cpp)
+add_executable(lr_pred lr_predict.cpp src/threading/pc_threading.cpp src/utils/utils.cpp)
 # add_executable(lr_train ${DIR_SRCS})
 # install (TARGETS lr_train DESTINATION ./bin)
 
