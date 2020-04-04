@@ -1,10 +1,10 @@
-## Ftrl-LR
+# Ftrl-LR
 
 Using multi-threading version of Ftrl to train logistic regression model for binary classification problem. For full theory and implementation details of Ftrl, see article...
 
 
 
-### Data Format
+## Data Format
 
 The model is primarily designed for high dimensional sparse data, so for saving memory purpose,  only *libsvm-like* data format is supported.  A tiny sample dataset is provided in `/data/sample_data.txt` folder.
 
@@ -25,7 +25,7 @@ python dataset.py --data_path data.csv \
                   --neg false
     
 # train and test dataset with negative sampling
-python dataset.py --train_path train.csv \
+python dataset.py --train_path train.csv \ 
 									--test_path  test.csv \
                   --train_output_path train-ml.txt \
                   --test_output_path test-ml.txt \
@@ -55,7 +55,7 @@ python dataset.py --train_path train.csv \
 
 
 
-### Build
+## Build
 
 ```shell
 cmake .
@@ -66,18 +66,18 @@ Cmake version >= 3.5.1. Output binaries will be under the `bin/` folder.
 
 
 
-### Usage
+## Usage
 
-1.  support standard input :
+1.  **support standard input :**
 
 ```shell
 cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
 ```
 
-2. use binary file :
+2. **use binary file :**
 
 ```shell
-./lr_train -m lr_model.txt \
+./lr_train -m lr_model.txt \ 
 					 -train_data train_data.csv \
            -eval_data eval_data.csv \
            -init_mean 0.0 \
@@ -90,7 +90,7 @@ cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
            -epoch 10 \
            -cmd false 
            
-./lr_predict -m lr_model.txt \
+./lr_predict -m lr_model.txt \ 
 						 -data test_data.csv \
 					 	 -o result.txt \
            	 -nthreads 4 \
@@ -124,16 +124,12 @@ cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
 
 
 
+<br>
+
 Besides, the script `/python/metrics.py` provides other metrics to evaluate the model, such as `f1`, `ROC AUC`, `PR AUC` . [`Numpy`](https://numpy.org/),  [`Pandas`](https://pandas.pydata.org/) and [`Scikit-Learn`](<https://scikit-learn.org/>) are required.
 
 ```shell
 python metrics.py result.txt
 ```
 
-
-
-
-
-
-
-<br><br>
+<br>
