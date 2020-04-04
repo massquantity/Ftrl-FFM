@@ -17,14 +17,14 @@ string train_help()
             "-m <model_path>: set the output model path\n"
             "-train_data <data_path>: set the train data path\n"
             "-eval_data <data_path>: set the evaluate data path\n"
-            "-init_mean <mean>: mean for paramemter initialization\tdefault:0.0\n"
-            "-init_stdev <stdev>: stdev for paramemter initialization\tdefault:0.01\n"
+            "-init_mean <mean>: mean for parameter initialization\tdefault:0.0\n"
+            "-init_stddev <stddev>: stddev for parameter initialization\tdefault:0.01\n"
             "-w_alpha <w_alpha>: alpha is one of the learning rate parameters\tdefault:0.05\n"
             "-w_beta <w_beta>: beta is one of the learning rate parameters\tdefault:1.0\n"
             "-w_l1 <w_L1_reg>: L1 regularization parameter of w\tdefault:0.1\n"
             "-w_l2 <w_L2_reg>: L2 regularization parameter of w\tdefault:5.0\n"
             "-nthreads <threads_num>: set the number of threads\tdefault:1\n"
-            "-epoch <epochs>: how mant epochs to train\tdefault:1\n"
+            "-epoch <epochs>: how many epochs to train\tdefault:1\n"
             "-cmd <command line input>: whether to input data using command line\tdefault:false\n"
     );
 }
