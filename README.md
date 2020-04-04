@@ -93,8 +93,8 @@ cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
 ./lr_predict -m lr_model.txt \ 
              -data test_data.csv \
              -o result.txt \
-           	 -nthreads 4 \
-           	 -cmd false 
+             -nthreads 4 \
+             -cmd false 
 ```
 
 **Arguments for `lr_train` :**
@@ -131,5 +131,11 @@ Besides, the script `/python/metrics.py` provides other metrics to evaluate the 
 ```shell
 python metrics.py result.txt
 ```
+
+
+
+## License
+
+**MIT**
 
 <br>
