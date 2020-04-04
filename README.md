@@ -26,7 +26,7 @@ python dataset.py --data_path data.csv \
     
 # train and test dataset with negative sampling
 python dataset.py --train_path train.csv \ 
-									--test_path  test.csv \
+                  --test_path  test.csv \
                   --train_output_path train-ml.txt \
                   --test_output_path test-ml.txt \
                   --threshold 0 \
@@ -78,7 +78,7 @@ cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
 
 ```shell
 ./lr_train -m lr_model.txt \ 
-					 -train_data train_data.csv \
+           -train_data train_data.csv \
            -eval_data eval_data.csv \
            -init_mean 0.0 \
            -init_stddev 0.01 \
@@ -91,8 +91,8 @@ cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
            -cmd false 
            
 ./lr_predict -m lr_model.txt \ 
-						 -data test_data.csv \
-					 	 -o result.txt \
+             -data test_data.csv \
+             -o result.txt \
            	 -nthreads 4 \
            	 -cmd false 
 ```
