@@ -44,12 +44,12 @@ python dataset.py --train_path train.csv \
 + `--train_output_path` : file path for saving transformed train data.
 + `--test_output_path` : file path for saving transformed test data.
 + `--train_frac` (default 0.8) : train set proportion when splitting data.
-+ `--threshold` (default 0) : threshold for converting labels into 1 and 0.
++ `--threshold` (default 0) : threshold for converting labels into 1 and 0. Labels larger than threshold will be converted to 1, and the rest will be 0.
 + `--sep` (default ',') :  delimiter in one sample.
 + `--label_col` (default 0) : label column index.
-+ `--cat_cols` : categorical column indices in string format, e.g., 1,2,3,5,7.
-+ `--num_cols` : numerical column indices in string format, e.g., 2,5,8,11,15.
-+ `--neg` (default False) : 
++ `--cat_cols` : categorical column indices in string format, no spaces, e.g., 1,2,3,5,7
++ `--num_cols` : numerical column indices in string format, no spaces, e.g., 2,5,8,11,15
++ `--neg` (default False) : whether to use negative sampling.
 + `--num_neg` (default 1) : number of negative samples generated per sample.
 + `--normalize` (default False) : whether to normalize numerical features.
 
@@ -116,7 +116,7 @@ cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
 
 **Arguments for `lr_predict` :**
 
-+ `-m` : the output model path.
++ `-m` : the saved model path.
 + `-data` : the input data path.
 + `-o` : the output result path.
 + `-nthreads` (default 1) : number of threads.
