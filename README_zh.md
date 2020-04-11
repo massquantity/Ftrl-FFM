@@ -1,6 +1,8 @@
 # Ftrl-LR
 
-### [<font size=5>English</font>](<https://github.com/massquantity/Ftrl-LR>)      <font size=5>简体中文</font>
+### [<font size=5>English</font>](<https://github.com/massquantity/Ftrl-LR>)  &nbsp;  <font size=5>简体中文</font>
+
+<br>
 
 多线程 FTRL 训练 logistic regression 模型，用于解决二分类问题。关于 FTRL 的原理和实现细节见 ...
 
