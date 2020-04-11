@@ -1,6 +1,6 @@
 # Ftrl-LR
 
-### [`English`](<https://github.com/massquantity/Ftrl-LR>)  &nbsp;  <font size=5><kbd>简体中文</kbd></font>
+### [`English`](<https://github.com/massquantity/Ftrl-LR>)  &nbsp;  <font size=5>`简体中文`</font>
 
 <br>
 
