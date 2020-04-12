@@ -7,57 +7,6 @@
 Using multi-threading version of Ftrl to train logistic regression model for binary classification problem. For full theory and implementation details of Ftrl, see article...
 
 
-## Data Format
-
-The model is primarily designed for high dimensional sparse data, so for saving memory purpose,  only *libsvm-like* data format is supported.  A tiny sample dataset is provided in `/data/sample_data.txt` folder.
-
-Due to lack of this kind of data format, a python script (`/python/dataset.py`) is provided to transform normal data format to libsvm format. For dataset only contains positive feedback, the script can be used to generate random negative samples.
-
-Main usage and arguments are as follows, [`Numpy`](https://numpy.org/) and [`Pandas`](https://pandas.pydata.org/) are required : 
-
-```shell
-# single dataset without negative sampling
-python dataset.py --data_path data.csv \ 
-                  --train_output_path train-ml.txt \
-                  --test_output_path test-ml.txt \
-                  --threshold 0 \
-                  --label_col 0 \
-                  --cat_cols 0,1,3,5,8 \
-                  --num_cols 4,6,7 \
-                  --normalize false \
-                  --neg false
-    
-# train and test dataset with negative sampling
-python dataset.py --train_path train.csv \ 
-                  --test_path  test.csv \
-                  --train_output_path train-ml.txt \
-                  --test_output_path test-ml.txt \
-                  --threshold 0 \
-                  --label_col 0 \
-                  --cat_cols 0,1,3,5,8 \
-                  --num_cols 4,6,7 \
-                  --normalize false \
-                  --neg true \
-                  --num_neg 2
-```
-
-+ `--data_path` :  single data file path, can be split into train/test data through the script. You must choose either `--data_path` mode (single data file) or `--train_path, --test_path` mode (train + test data files).
-+ `--train_path` : train data file path, in this mode, both train and test data must be provided. 
-+ `--test_path` : test data file path, in this mode, both train and test data must be provided. 
-+ `--train_output_path` : file path for saving transformed train data.
-+ `--test_output_path` : file path for saving transformed test data.
-+ `--train_frac` (default 0.8) : train set proportion when splitting data.
-+ `--threshold` (default 0) : threshold for converting labels into 1 and 0. Labels larger than threshold will be converted to 1, and the rest will be 0.
-+ `--sep` (default ',') :  delimiter in one sample.
-+ `--label_col` (default 0) : label column index.
-+ `--cat_cols` : categorical column indices in string format, no spaces, e.g., 1,2,3,5,7
-+ `--num_cols` : numerical column indices in string format, no spaces, e.g., 2,5,8,11,15
-+ `--neg` (default False) : whether to use negative sampling.
-+ `--num_neg` (default 1) : number of negative samples generated per sample.
-+ `--normalize` (default False) : whether to normalize numerical features.
-
-
-
 ## Build
 
 ```shell
@@ -134,6 +83,56 @@ Besides, the script `/python/metrics.py` provides other metrics to evaluate the 
 ```shell
 python metrics.py result.txt
 ```
+
+
+## Data Format
+
+The model is primarily designed for high dimensional sparse data, so for saving memory purpose,  only *libsvm-like* data format is supported.  A tiny sample dataset is provided in `/data/sample_data.txt` folder.
+
+Due to lack of this kind of data format, a python script (`/python/dataset.py`) is provided to transform normal data format to libsvm format. For dataset only contains positive feedback, the script can be used to generate random negative samples.
+
+Main usage and arguments are as follows, [`Numpy`](https://numpy.org/) and [`Pandas`](https://pandas.pydata.org/) are required : 
+
+```shell
+# single dataset without negative sampling
+python dataset.py --data_path data.csv \ 
+                  --train_output_path train-ml.txt \
+                  --test_output_path test-ml.txt \
+                  --threshold 0 \
+                  --label_col 0 \
+                  --cat_cols 0,1,3,5,8 \
+                  --num_cols 4,6,7 \
+                  --normalize false \
+                  --neg false
+    
+# train and test dataset with negative sampling
+python dataset.py --train_path train.csv \ 
+                  --test_path  test.csv \
+                  --train_output_path train-ml.txt \
+                  --test_output_path test-ml.txt \
+                  --threshold 0 \
+                  --label_col 0 \
+                  --cat_cols 0,1,3,5,8 \
+                  --num_cols 4,6,7 \
+                  --normalize false \
+                  --neg true \
+                  --num_neg 2
+```
+
++ `--data_path` :  single data file path, can be split into train/test data through the script. You must choose either `--data_path` mode (single data file) or `--train_path, --test_path` mode (train + test data files).
++ `--train_path` : train data file path, in this mode, both train and test data must be provided. 
++ `--test_path` : test data file path, in this mode, both train and test data must be provided. 
++ `--train_output_path` : file path for saving transformed train data.
++ `--test_output_path` : file path for saving transformed test data.
++ `--train_frac` (default 0.8) : train set proportion when splitting data.
++ `--threshold` (default 0) : threshold for converting labels into 1 and 0. Labels larger than threshold will be converted to 1, and the rest will be 0.
++ `--sep` (default ',') :  delimiter in one sample.
++ `--label_col` (default 0) : label column index.
++ `--cat_cols` : categorical column indices in string format, no spaces, e.g., 1,2,3,5,7
++ `--num_cols` : numerical column indices in string format, no spaces, e.g., 2,5,8,11,15
++ `--neg` (default False) : whether to use negative sampling.
++ `--num_neg` (default 1) : number of negative samples generated per sample.
++ `--normalize` (default False) : whether to normalize numerical features.
 
 
 
