@@ -8,37 +8,7 @@
 
 
 
->输入： 参数 $\alpha, \,\beta, \,\lambda_1, \,\lambda_2$ 
->
->初始化： $\bold{z}_0 = \bold{0}, \; \bold{n}_0 = \bold{0}$
->
->$\text{for t = 1 to T} : $
->
->​        收到一个样本 $\{\bold{x}_t, y_t\}$ ，$y_t \in \{-1, + 1\}$ 。令 $I$ 为所有不为零的特征集合，即 $I = \{i \,|\, x_i \neq 0\}$
->
->​        $\text{for} \;\;i \in I$  更新 $w_{t,i}$ : 
->$$
->w_{t,i} = 
->\begin{cases}
->\qquad\qquad \large{0}   & \quad\text{if}\;\; |z_{i}| < \lambda_1 \\[2ex]
->- \left(\lambda_2 + \frac{\beta + \sqrt{n_i}}{\alpha} \right)^{-1} \left(z_{i} - \text{sgn}(z_{i})\cdot\lambda_1 \right) & \quad \text{otherwise}
->\end{cases}
->$$
->​        使用更新后的 $\bold{w}_t$ 计算 $f(\bold{x}_t) = \bold{w}_t \cdot \bold{x}_t$
->
->​        $\text{for all} \; i \in I :$
->
->​                $g_i = y_t (S(y_t f(\bold{x}_t)) - 1) x_i$
->
->​                $\sigma_i = \frac{\sqrt{n_i + g_i^2} - \sqrt{n_i}}{\alpha}$
->
->​                $z_i \leftarrow z_i + g_i - \sigma_i w_{t,i}$
->
->​                $n_i \leftarrow n_i + g_i^2$
->
->​        $\text{end for}$
->
->$\text{end for}$
+![](<https://raw.githubusercontent.com/massquantity/Ftrl-LR/master/pic/002.png>)
 
 
 

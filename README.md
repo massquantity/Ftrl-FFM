@@ -7,6 +7,12 @@
 Using multi-threading version of Ftrl to train logistic regression model for binary classification problem. For full theory and implementation details of Ftrl, see article...
 
 
+
+![](<https://raw.githubusercontent.com/massquantity/Ftrl-LR/master/pic/001.png>)
+
+
+
+
 ## Build
 
 ```shell
