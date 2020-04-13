@@ -36,7 +36,7 @@ void ftrl_predicter::run_task(vector<string> &dataBuffer, int t)
         outputVec[i] = to_string(sample.y) + " " + to_string(score);
     }
     outMtx.lock();
-    for (const auto & res : outputVec) {
+    for (const auto &res : outputVec) {
         fPredict << res << endl;
     }
     outMtx.unlock();

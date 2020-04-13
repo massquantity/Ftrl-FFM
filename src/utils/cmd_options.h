@@ -121,7 +121,7 @@ struct trainer_option
 string predict_help()
 {
     return string(
-            "\nUsage: ./lr_predict [<options>]  OR  cat sample | ./lr_predict [<options>]"
+            "\nUsage: ./lr_pred [<options>]  OR  cat sample | ./lr_predict [<options>]"
             "\n"
             "\n"
             "options:\n"
