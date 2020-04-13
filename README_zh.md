@@ -6,7 +6,7 @@
 
 多线程 FTRL 训练 logistic regression 模型，用于解决二分类问题。关于 FTRL 的原理和实现细节见 ...
 
-
+下面是 FTRL 的伪代码：
 
 ![](<https://raw.githubusercontent.com/massquantity/Ftrl-LR/master/pic/002.png>)
 
@@ -16,6 +16,8 @@
 ## 编译
 
 ```shell
+git clone git@github.com:massquantity/Ftrl-LR.git
+cd Ftrl-LR
 cmake .
 make
 ```
@@ -35,7 +37,7 @@ cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
 2. **使用二进制文件：**
 
 ```shell
-./lr_train -m lr_model.txt \ 
+./lr_train -m lr_model.txt \
            -train_data train_data.csv \
            -eval_data eval_data.csv \
            -init_mean 0.0 \
@@ -48,7 +50,7 @@ cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
            -epoch 10 \
            -cmd false 
            
-./lr_predict -m lr_model.txt \ 
+./lr_pred -m lr_model.txt \
              -data test_data.csv \
              -o result.txt \
              -nthreads 4 \
@@ -72,7 +74,7 @@ cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
 
 
 
-**`lr_predict`的参数 :**
+**`lr_pred`的参数 :**
 
 + `-m` : 存储的模型路径。
 + `-data` : 输入数据路径。
@@ -84,7 +86,7 @@ cat train_data.csv | ./lr_train -m lr_model.txt -cmd true
 
 <br>
 
-另外，脚本 `/python/metrics.py` 提供了其他用于评估模型的指标，如 f1、ROC AUC、PR AUC 等。要使用需要先安装 [`Numpy`](https://numpy.org/),  [`Pandas`](https://pandas.pydata.org/) 和 [`Scikit-Learn`](<https://scikit-learn.org/>)  。
+另外，脚本 `/python/metrics.py` 提供了其他用于评估模型的指标，如 `F1`、`ROC AUC`、`PR AUC` 等。要使用需要先安装 [`Numpy`](https://numpy.org/),  [`Pandas`](https://pandas.pydata.org/) 和 [`Scikit-Learn`](<https://scikit-learn.org/>)  。
 
 ```shell
 python metrics.py result.txt
@@ -96,13 +98,13 @@ python metrics.py result.txt
 
 该模型主要用于处理高维稀疏数据，所以为了节省内存，仅支持类 `libsvm` 格式的数据。在 `/data/sample_data.txt` 中提供了一个小型数据样例。
 
-由于现实中现成的 `libsvm` 格式数据较少，仓库中提供了一个 python 脚本 (`/python/dataset.py`) 用于将常见的 `csv` 格式转换为 `libsbvm` 格式。考虑到许多类别型特征经过 one-hot 后维数太大难以存储，我做了一些特殊处理，避免了直接 one-hot 转换。另外对于只含有正反馈的数据集，也可以进行随机生成负样本。
+由于现实中现成的 `libsvm` 格式数据较少，仓库中提供了一个 python 脚本 (`/python/dataset.py`) 用于将常见的 `csv` 格式转换为 `libsbvm` 格式。考虑到许多类别型特征经过 one-hot 后维数太大难以存储，我做了一些特殊处理，避免了直接对数据 one-hot 转换。另外对于只含有正反馈的数据集，也可以进行随机生成负样本。
 
 使用方法和参数如下，需要先安装[`Numpy`](https://numpy.org/) 和 [`Pandas`](https://pandas.pydata.org/) : 
 
 ```shell
 # single dataset without negative sampling
-python dataset.py --data_path data.csv \ 
+python dataset.py --data_path data.csv \
                   --train_output_path train-ml.txt \
                   --test_output_path test-ml.txt \
                   --threshold 0 \
@@ -113,7 +115,7 @@ python dataset.py --data_path data.csv \
                   --neg false
     
 # train and test dataset with negative sampling
-python dataset.py --train_path train.csv \ 
+python dataset.py --train_path train.csv \
                   --test_path  test.csv \
                   --train_output_path train-ml.txt \
                   --test_output_path test-ml.txt \
