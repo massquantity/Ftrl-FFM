@@ -4,7 +4,7 @@
 
 <br>
 
-Using multi-threading version of Ftrl to train logistic regression model for binary classification problem. For full theory and implementation details of Ftrl, see article...
+Using multi-threading version of Ftrl to train logistic regression model for binary classification problem. For full theory and implementation details of Ftrl, see [blog post](https://www.cnblogs.com/massquantity/p/12693314.html)
 
 Here is the pseudocode of FTRL: 
 

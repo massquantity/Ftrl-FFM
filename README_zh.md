@@ -4,7 +4,7 @@
 
 <br>
 
-多线程 FTRL 训练 logistic regression 模型，用于解决二分类问题。关于 FTRL 的原理和实现细节见 ...
+多线程 FTRL 训练 logistic regression 模型，用于解决二分类问题。关于 FTRL 的原理和实现细节见 [博客文章](https://www.cnblogs.com/massquantity/p/12693314.html)
 
 下面是 FTRL 的伪代码：
 
