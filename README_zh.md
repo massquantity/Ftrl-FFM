@@ -8,7 +8,7 @@
 
 下面是 FTRL 的伪代码：
 
-![](<https://raw.githubusercontent.com/massquantity/Ftrl-LR/master/pic/002.png>)
+![](https://upload-images.jianshu.io/upload_images/2236479-a841c4e1cf51f2b8.png?imageMogr2/auto-orient/strip|imageView2/2/w/857/format/webp)
 
 
 
