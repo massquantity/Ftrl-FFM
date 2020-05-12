@@ -8,7 +8,7 @@ Using multi-threading version of Ftrl to train logistic regression model for bin
 
 Here is the pseudocode of FTRL: 
 
-![](https://upload-images.jianshu.io/upload_images/2236479-0e75a55ed56f9137.png?imageMogr2/auto-orient/strip|imageView2/2/w/795/format/webp)
+![](https://s1.ax1x.com/2020/05/12/YtmINn.png)
 
 
 
