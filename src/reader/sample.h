@@ -9,10 +9,12 @@
 const std::string splitter = " ";
 const std::string innerSplitter = ":";
 
+typedef std::vector<std::tuple<int, std::string, float>> instance;
+
 class sample {
 public:
   int y;
-  std::vector<std::tuple<int, std::string, double>> x;
+  instance x;
 
   sample(const std::string &line) {
     this->x.clear();
@@ -50,7 +52,7 @@ public:
         throw std::out_of_range(line);
       }
       end = line.find_first_of(splitter, begin);
-      double value = stod(line.substr(begin, end - begin));
+      float value = stof(line.substr(begin, end - begin));
       if (value != 0.) {
         x.emplace_back(std::make_tuple(field, feat, value));
       }

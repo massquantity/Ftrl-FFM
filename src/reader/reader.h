@@ -1,8 +1,10 @@
 #ifndef FTRL_FFM_READER_H
 #define FTRL_FFM_READER_H
 
+#include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <regex>
 #include <thread>
 #include "parser.h"
 
@@ -10,11 +12,21 @@ namespace ftrl {
 
 class Reader {
 public:
+  explicit Reader(const std::string &fileType);
   void loadFromFile(const std::string &fileName, int numThreads = 1);
   size_t getSize() const { return dataSize; }
   size_t dataSize;
   std::vector<Sample> data;
+  std::shared_ptr<Parser> parser;
 };
+
+Reader::Reader(const std::string &fileType) {
+  if (fileType == "libsvm") {
+    parser = std::make_shared<LibsvmParser>();
+  } else if (fileType == "libffm") {
+    parser = std::make_shared<FFMParser>();
+  }
+}
 
 void Reader::loadFromFile(const std::string &fileName, int numThreads) {
   printf("Loading data from file: %s\n", fileName.c_str());
@@ -36,7 +48,7 @@ void Reader::loadFromFile(const std::string &fileName, int numThreads) {
 
   std::string unused;
   for (size_t i = 1; i < numThreads; i++) {
-    unsigned long pos = len / numThreads * i;
+    uint64 pos = len / numThreads * i;
     ifs.clear();
     ifs.seekg(pos, std::ios_base::beg);
     getline(ifs, unused);
@@ -49,13 +61,13 @@ void Reader::loadFromFile(const std::string &fileName, int numThreads) {
   std::vector<std::vector<Sample>> partitionData(numThreads);
   std::vector<std::thread> dataThreads;
   for (size_t i = 0; i < numThreads; i++) {
-    dataThreads.emplace_back([i, &fileName, &partitions, &partitionData] {
+    dataThreads.emplace_back([i, &fileName, &partitions, &partitionData, this] {
       std::ifstream ifs_t(fileName);
       ifs_t.seekg(partitions[i]);
       std::string line;
       while (ifs_t.tellg() < partitions[i+1] && getline(ifs_t, line)) {
         Sample sample;
-        Parser::parse(line, sample);
+        parser->parse(line, sample);
         partitionData[i].emplace_back(sample);
       }
       ifs_t.close();
