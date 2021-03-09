@@ -13,73 +13,73 @@
 #include <semaphore.h>
 #include <condition_variable>
 
-class pc_task {
+class PcTask {
 public:
-  pc_task() = default;
-  pc_task(int n_threads, bool cmd = false): nthreads(n_threads), cmd(cmd) { }
+  PcTask() = default;
+  PcTask(int n_threads, bool cmd = false): n_threads(n_threads), cmd(cmd) { }
   void openFile(const std::string &file_path);
   void rewindFile();
   void run();
-  virtual void run_task(std::vector<std::string> &dataBuffer, int t = 0) = 0;
-  virtual ~pc_task() = default;
+  virtual void run_task(std::vector<std::string> &data_buffer, int t = 0) = 0;
+  virtual ~PcTask() = default;
 
 private:
   std::ifstream ifs;
-  std::mutex bufMutex;
+  std::mutex buf_mutex;
   std::condition_variable pro_cv, con_cv;
   std::queue<std::string> buffer;
-  std::vector<std::thread> threadVec;
-  int nthreads;
-  int bufSize = 20000;
-  int logNum = 1000000;
+  std::vector<std::thread> thread_vec;
+  int n_threads;
+  int buf_size = 20000;
+  int log_num = 1000000;
   bool input_end = false;
   bool cmd;
   void producerThread();
   void consumerThread(int t);
 };
 
-void pc_task::openFile(const std::string &file_path) {
+void PcTask::openFile(const std::string &file_path) {
   if (!cmd) {
     ifs.open(file_path, std::istream::in | std::istream::binary);
-    if (!ifs) {
+    if (!ifs.good()) {
       fprintf(stderr, "open file <%s> error. \n", file_path.c_str());
-      EXIT_FAILURE;
+      exit(EXIT_FAILURE);
     }
   }
 }
 
-void pc_task::rewindFile() {
+void PcTask::rewindFile() {
   if (ifs.eof()) {
     ifs.clear();
     ifs.seekg(0L, std::ifstream::beg);
   }
 }
 
-void pc_task::run() {
+void PcTask::run() {
   input_end = false;
-  threadVec.clear();
-  threadVec.emplace_back(std::thread(&pc_task::producerThread, this));
-  for (int i = 0; i < nthreads; i++) {
-    threadVec.emplace_back(std::thread(&pc_task::consumerThread, this, i));
+  thread_vec.clear();
+  thread_vec.emplace_back(std::thread(&PcTask::producerThread, this));
+  for (int i = 0; i < n_threads; i++) {
+    thread_vec.emplace_back(std::thread(&PcTask::consumerThread, this, i));
   }
-  for (std::thread &t : threadVec)
+  for (std::thread &t : thread_vec)
     t.join();
 }
 
-void pc_task::producerThread() {
+void PcTask::producerThread() {
   std::string line;
   int line_num = 0;
   while (true) {
-    std::unique_lock<std::mutex> lck(bufMutex);
+    std::unique_lock<std::mutex> lck(buf_mutex);
     pro_cv.wait(lck, [&]() { return buffer.empty(); });
-    for (int i = 0; i < bufSize; i++) {
+    for (int i = 0; i < buf_size; i++) {
       if (cmd ? (!getline(std::cin, line)) : (!getline(ifs, line))) {
         input_end = true;
         break;
       }
       buffer.push(line);
       line_num++;
-      if (line_num % logNum == 0) {
+      if (line_num % log_num == 0) {
         std::cout << line_num << " lines finished..." << std::endl;
       }
     }
@@ -89,13 +89,13 @@ void pc_task::producerThread() {
   }
 }
 
-void pc_task::consumerThread(int t) {
+void PcTask::consumerThread(int t) {
   bool thread_end = false;
   std::vector<std::string> input_vec;
-  input_vec.reserve(bufSize);
+  input_vec.reserve(buf_size);
   while (true) {
     input_vec.clear();
-    std::unique_lock<std::mutex> lck(bufMutex);
+    std::unique_lock<std::mutex> lck(buf_mutex);
     con_cv.wait(lck, [&]() {
       thread_end = input_end;
       return !buffer.empty() || input_end;
