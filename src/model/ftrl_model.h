@@ -17,7 +17,7 @@
 
 namespace ftrl {
 
-class ftrl_model {
+class FtrlModel {
 public:
   std::string model_type = "FFM";
   int n_factors, n_fields;
@@ -26,11 +26,11 @@ public:
   std::shared_ptr<ftrl_model_unit> model_bias;
   std::unordered_map<int, std::shared_ptr<ftrl_model_unit>> model_weight;
 
-  ftrl_model(float _mean, float _stddev, std::string _model_type);
-  ftrl_model(float _mean, float _stddev, int _n_factors,
-             std::string _model_type);
-  ftrl_model(float _mean, float _stddev, int _n_factors, int _n_fields,
-             std::string _model_type);
+  FtrlModel(float _mean, float _stddev, std::string _model_type);
+  FtrlModel(float _mean, float _stddev, int _n_factors,
+            std::string _model_type);
+  FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields,
+            std::string _model_type);
   std::shared_ptr<ftrl_model_unit>& getOrInitWeight(int index);
   std::shared_ptr<ftrl_model_unit>& getOrInitBias();
 
@@ -52,13 +52,13 @@ private:
   std::mutex bias_mutex;
 };
 
-ftrl_model::ftrl_model(float _mean, float _stddev, std::string _model_type) 
+FtrlModel::FtrlModel(float _mean, float _stddev, std::string _model_type)
     : init_mean(_mean), init_stddev(_stddev), model_type(_model_type) { 
 }
 
-ftrl_model::ftrl_model(float _mean, float _stddev, int _n_factors,
-                       std::string _model_type)
-                       : ftrl_model(_mean, _stddev, _model_type) { 
+FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors,
+                     std::string _model_type)
+                       : FtrlModel(_mean, _stddev, _model_type) {
   n_factors = _n_factors;
   sum_vx.resize(n_factors);
   for (int i = 0; i < n_factors; i++) {
@@ -66,13 +66,13 @@ ftrl_model::ftrl_model(float _mean, float _stddev, int _n_factors,
   }
 }
 
-ftrl_model::ftrl_model(float _mean, float _stddev, int _n_factors, int _n_fields,
-                       std::string _model_type)
-                       : ftrl_model(_mean, _stddev, _n_factors, _model_type) {
+FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields,
+                     std::string _model_type)
+                       : FtrlModel(_mean, _stddev, _n_factors, _model_type) {
   n_fields = _n_fields;
 }
 
-std::shared_ptr<ftrl_model_unit>& ftrl_model::getOrInitWeight(int index) {
+std::shared_ptr<ftrl_model_unit>& FtrlModel::getOrInitWeight(int index) {
   auto iter = model_weight.find(index);
   if (iter == model_weight.end()) {
     std::lock_guard<std::mutex> lock(weight_mutex);
@@ -90,7 +90,7 @@ std::shared_ptr<ftrl_model_unit>& ftrl_model::getOrInitWeight(int index) {
   return model_weight[index];
 }
 
-std::shared_ptr<ftrl_model_unit>& ftrl_model::getOrInitBias() {
+std::shared_ptr<ftrl_model_unit>& FtrlModel::getOrInitBias() {
   if (model_bias == nullptr) {
     std::lock_guard<std::mutex> lock(bias_mutex);
     model_bias = std::make_shared<ftrl_model_unit>();
@@ -98,14 +98,14 @@ std::shared_ptr<ftrl_model_unit>& ftrl_model::getOrInitBias() {
   return model_bias;
 }
 
-float ftrl_model::predict(
+float FtrlModel::predict(
     const std::vector<std::tuple<int, int, float>> &x,
     bool sigmoid) {
   float result = logit(x, false);
   return sigmoid ? (1.0f / (1.0f + std::exp(-result))) : result;
 }
 
-float ftrl_model::logit(
+float FtrlModel::logit(
     const std::vector<std::tuple<int, int, float>> &x,
     bool update_model) {
   double result = 0.0;
@@ -178,8 +178,8 @@ float ftrl_model::logit(
   return result;
 }
 
-float ftrl_model::train(const std::vector<std::tuple<int, int, float>> &x, int y,
-                        float w_alpha, float w_beta, float w_l1, float w_l2) {
+float FtrlModel::train(const std::vector<std::tuple<int, int, float>> &x, int y,
+                       float w_alpha, float w_beta, float w_l1, float w_l2) {
   size_t x_len = x.size();
   std::vector<std::shared_ptr<ftrl_model_unit>> params(x_len + 1);
   for (int i = 0; i < x_len; i++) {
@@ -209,7 +209,7 @@ float ftrl_model::train(const std::vector<std::tuple<int, int, float>> &x, int y
   return p;
 }
 
-void ftrl_model::outputModel(std::ofstream &ofs) {
+void FtrlModel::outputModel(std::ofstream &ofs) {
   std::ostringstream ost;
   ost << "bias " << *model_bias << std::endl;
   for (auto &elem : model_weight) {
@@ -218,14 +218,14 @@ void ftrl_model::outputModel(std::ofstream &ofs) {
   ofs << ost.str();
 }
 
-void ftrl_model::debugPrintModel()
+void FtrlModel::debugPrintModel()
 {
   std::cout << "bias " << *model_bias << std::endl;
   for (auto iter = model_weight.begin(); iter != model_weight.end(); iter++)
     std::cout << iter->first << " " << *(iter->second) << std::endl;
 }
 
-bool ftrl_model::loadModel(std::ifstream &ifs) {
+bool FtrlModel::loadModel(std::ifstream &ifs) {
   /*
   std::string line;
   if (!getline(ifs, line))  // first get bias
