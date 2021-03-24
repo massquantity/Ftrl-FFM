@@ -20,7 +20,7 @@ public:
   double get_loss();
   bool loadModel(std::ifstream &ifs);
   void outputModel(std::ofstream &ofs);
-  std::shared_ptr<ftrl_model> pModel;
+  std::shared_ptr<FtrlModel> pModel;
 
 private:
   float w_alpha, w_beta, w_l1, w_l2;
@@ -34,13 +34,13 @@ FtrlOnline::FtrlOnline(const trainer_option &opt)
     : PcTask(opt.thread_num, opt.cmd), w_alpha(opt.w_alpha), w_beta(opt.w_beta),
       w_l1(opt.w_l1), w_l2(opt.w_l2), n_threads(opt.thread_num) {
   if (opt.model_type == "LR") {
-    pModel = std::make_shared<ftrl_model>(
+    pModel = std::make_shared<FtrlModel>(
         opt.init_mean, opt.init_stddev, opt.model_type);
   } else if (opt.model_type == "FM") {
-    pModel = std::make_shared<ftrl_model>(
+    pModel = std::make_shared<FtrlModel>(
         opt.init_mean, opt.init_stddev, opt.n_factors, opt.model_type);
   } else if (opt.model_type == "FFM") {
-    pModel = std::make_shared<ftrl_model>(
+    pModel = std::make_shared<FtrlModel>(
         opt.init_mean, opt.init_stddev, opt.n_factors, opt.n_fields, opt.model_type);
   }
   if (opt.file_type == "libsvm") {
