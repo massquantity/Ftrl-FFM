@@ -14,13 +14,13 @@ namespace ftrl {
 class Evaluator : public PcTask {
 public:
   explicit Evaluator(const trainer_option &opt);
-  void loadTrainedModel(std::shared_ptr<ftrl_model> &train_model);
+  void loadTrainedModel(std::shared_ptr<FtrlModel> &train_model);
   double predict(const std::vector<std::tuple<int, int, float>> &x);
   double get_loss();
   ~Evaluator();
 
 private:
-  std::shared_ptr<ftrl_model> eval_model;
+  std::shared_ptr<FtrlModel> eval_model;
   int n_threads;
   std::shared_ptr<Parser> parser;
   void run_task(std::vector<std::string> &data_buffer, int t) override;
@@ -57,7 +57,7 @@ void Evaluator::run_task(std::vector<std::string> &data_buffer, int t) {
   nums[t] += data_buffer.size();
 }
 
-void Evaluator::loadTrainedModel(std::shared_ptr<ftrl_model> &train_model) {
+void Evaluator::loadTrainedModel(std::shared_ptr<FtrlModel> &train_model) {
   eval_model = train_model;
 }
 
