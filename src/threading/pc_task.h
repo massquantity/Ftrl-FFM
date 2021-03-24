@@ -1,6 +1,7 @@
 #ifndef FTRL_FFM_PC_TASK_H
 #define FTRL_FFM_PC_TASK_H
 
+#include <atomic>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -32,7 +33,7 @@ private:
   int n_threads;
   int buf_size = 20000;
   int log_num = 1000000;
-  bool input_end = false;
+  std::atomic<bool> input_end;
   bool cmd;
   void producerThread();
   void consumerThread(int t);
@@ -90,14 +91,14 @@ void PcTask::producerThread() {
 }
 
 void PcTask::consumerThread(int t) {
-  bool thread_end = false;
+  thread_local bool thread_end = false;
   std::vector<std::string> input_vec;
   input_vec.reserve(buf_size);
   while (true) {
     input_vec.clear();
     std::unique_lock<std::mutex> lck(buf_mutex);
     con_cv.wait(lck, [&]() {
-      thread_end = input_end;
+      thread_end = input_end.load();
       return !buffer.empty() || input_end;
     });
     if (buffer.empty() && input_end) break;
