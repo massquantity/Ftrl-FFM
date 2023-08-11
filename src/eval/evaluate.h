@@ -4,20 +4,23 @@
 #include <fstream>
 #include <mutex>
 #include <memory>
+
+#include "loss.h"
 #include "../model/ftrl_model.h"
 #include "../threading/pc_task.h"
 #include "../reader/parser.h"
-#include "loss.h"
+#include "../utils/cmd_option.h"
+#include "../utils/common.h"
 
 namespace ftrl {
 
 class Evaluator : public PcTask {
 public:
-  explicit Evaluator(const trainer_option &opt);
-  void loadTrainedModel(std::shared_ptr<FtrlModel> &train_model);
-  double predict(const std::vector<std::tuple<int, int, float>> &x);
+  explicit Evaluator(const config_options &opt);
+  void load_trained_model(std::shared_ptr<FtrlModel> &train_model);
+  double predict(const feat_vec &feats);
   double get_loss();
-  ~Evaluator();
+  ~Evaluator() override;
 
 private:
   std::shared_ptr<FtrlModel> eval_model;
@@ -25,15 +28,15 @@ private:
   std::shared_ptr<Parser> parser;
   void run_task(std::vector<std::string> &data_buffer, int t) override;
   std::unique_ptr<double[]> losses;
-  std::unique_ptr<long[]> nums;
+  std::unique_ptr<uint64[]> nums;
   // std::mutex eval_mtx;
 };
 
-Evaluator::Evaluator(const trainer_option &opt)
+Evaluator::Evaluator(const config_options &opt)
     : PcTask(opt.thread_num, opt.cmd), n_threads(opt.thread_num) {
-  int n = opt.thread_num;
+  const int n = opt.thread_num;
   losses = std::unique_ptr<double[]>(new double[n]);
-  nums = std::unique_ptr<long[]>(new long[n]);
+  nums = std::unique_ptr<uint64[]>(new uint64[n]);
   for (int i = 0; i < n; i++) {
     losses[i] = 0.0;
     nums[i] = 0;
@@ -50,24 +53,24 @@ void Evaluator::run_task(std::vector<std::string> &data_buffer, int t) {
   for (const auto &rawData : data_buffer) {
     Sample sample;
     parser->parse(rawData, sample);
-    double pred = predict(sample.x);
+    const double pred = predict(sample.x);
     tmp_loss += loss(sample.y, pred);
   }
   losses[t] += tmp_loss;
   nums[t] += data_buffer.size();
 }
 
-void Evaluator::loadTrainedModel(std::shared_ptr<FtrlModel> &train_model) {
+void Evaluator::load_trained_model(std::shared_ptr<FtrlModel> &train_model) {
   eval_model = train_model;
 }
 
-double Evaluator::predict(const std::vector<std::tuple<int, int, float>> &x) {
-  return eval_model->predict(x, false);
+double Evaluator::predict(const feat_vec &feats) {
+  return eval_model->predict(feats, false);
 }
 
 double Evaluator::get_loss() {
   double total_loss = 0.0;
-  long total_num = 0;
+  uint64 total_num = 0;
   for (int i = 0; i < n_threads; i++) {
     total_loss += losses[i];
     total_num += nums[i];
@@ -76,7 +79,7 @@ double Evaluator::get_loss() {
     losses[i] = 0.0;
     nums[i] = 0;
   }
-  return total_loss / total_num;
+  return total_loss / static_cast<double>(total_num);
 }
 
 Evaluator::~Evaluator() {

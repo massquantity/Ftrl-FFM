@@ -1,88 +1,91 @@
 #ifndef FTRL_FFM_READER_H
 #define FTRL_FFM_READER_H
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <fstream>
+#include <numeric>
 #include <regex>
 #include <thread>
+
 #include "parser.h"
 
 namespace ftrl {
 
 class Reader {
 public:
-  explicit Reader(const std::string &fileType);
-  void loadFromFile(const std::string &fileName, int numThreads = 1);
-  size_t getSize() const { return dataSize; }
-  size_t dataSize;
+  explicit Reader(const std::string &file_type);
+  void load_from_file(const std::string &file_name, int n_threads);
+  [[maybe_unused]] [[nodiscard]] size_t getSize() const { return dataSize; }
+  size_t dataSize{0};
   std::vector<Sample> data;
   std::shared_ptr<Parser> parser;
 };
 
-Reader::Reader(const std::string &fileType) {
-  if (fileType == "libsvm") {
+Reader::Reader(const std::string &file_type) {
+  if (file_type == "libsvm") {
     parser = std::make_shared<LibsvmParser>();
-  } else if (fileType == "libffm") {
+  } else if (file_type == "libffm") {
     parser = std::make_shared<FFMParser>();
   }
 }
 
-void Reader::loadFromFile(const std::string &fileName, int numThreads) {
-  printf("Loading data from file: %s\n", fileName.c_str());
+void Reader::load_from_file(const std::string &file_name, int n_threads) {
+  printf("Loading data from file: %s\n", file_name.c_str());
   auto start = std::chrono::steady_clock::now();
-  std::ifstream ifs(fileName);
+  std::ifstream ifs(file_name);
   if (!ifs.good()) {
-    std::cerr << "fail to open " << fileName << std::endl;
-    exit(EXIT_FAILURE);
+    std::cerr << "fail to open " << file_name << std::endl;
+    exit(EXIT_FAILURE);  // NOLINT
   }
 
-  auto fileLen = [&](std::ifstream &f) {
+  auto file_len = [&](std::ifstream &f) {
     f.seekg(0L, std::ios_base::end);
     return f.tellg();
   };
-  auto len = fileLen(ifs);
-  std::vector<off_t> partitions(numThreads + 1);
+  auto len = file_len(ifs);
+  std::vector<off_t> partitions(n_threads + 1);
   partitions[0] = 0;
-  partitions[numThreads] = len;
+  partitions[n_threads] = len;
 
   std::string unused;
-  for (size_t i = 1; i < numThreads; i++) {
-    uint64 pos = len / numThreads * i;
+  for (size_t i = 1; i < n_threads; i++) {
+    const uint64 pos = len / n_threads * i;
     ifs.clear();
-    ifs.seekg(pos, std::ios_base::beg);
-    getline(ifs, unused);
+    ifs.seekg(pos, std::ios_base::beg);  // NOLINT
+    std::getline(ifs, unused);
     partitions[i] = ifs.tellg();
   }
   ifs.close();
 
   // todo: read from memory
-  // std::vector<Sample> partitionData[numThreads];
-  std::vector<std::vector<Sample>> partitionData(numThreads);
-  std::vector<std::thread> dataThreads;
-  for (size_t i = 0; i < numThreads; i++) {
-    dataThreads.emplace_back([i, &fileName, &partitions, &partitionData, this] {
-      std::ifstream ifs_t(fileName);
+  // std::vector<Sample> partition_data[n_threads];
+  std::vector<std::vector<Sample>> partition_data(n_threads);
+  std::vector<std::thread> data_threads;
+  for (size_t i = 0; i < n_threads; i++) {
+    data_threads.emplace_back([i, &file_name, &partitions, &partition_data, this] {
+      std::ifstream ifs_t(file_name);
       ifs_t.seekg(partitions[i]);
       std::string line;
-      while (ifs_t.tellg() < partitions[i+1] && getline(ifs_t, line)) {
+      while (ifs_t.tellg() < partitions[i+1] && std::getline(ifs_t, line)) {
         Sample sample;
         parser->parse(line, sample);
-        partitionData[i].emplace_back(sample);
+        partition_data[i].emplace_back(sample);
       }
       ifs_t.close();
     });
   }
-  for (auto &t : dataThreads) {
+  for (auto &t : data_threads) {
     t.join();
   }
 
-  size_t totalSize = std::accumulate(partitionData.begin(), partitionData.end(),
-      size_t(0), [](size_t l, std::vector<Sample> &r) { return l + r.size(); });
+  const size_t totalSize = std::accumulate(
+      partition_data.begin(), partition_data.end(), size_t(0),
+      [](size_t acc, std::vector<Sample> &samples) { return acc + samples.size(); });
   data.resize(totalSize);
   dataSize = totalSize;
   size_t cur = 0;
-  for (const auto &pd : partitionData) {
+  for (const auto &pd : partition_data) {
     std::move(pd.begin(), pd.end(), data.begin() + cur);
     cur += pd.size();
   }

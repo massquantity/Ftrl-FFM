@@ -1,6 +1,8 @@
 #ifndef FTRL_FFM_FTRL_UNIT_H
 #define FTRL_FFM_FTRL_UNIT_H
 
+#include <mutex>
+
 #include "../utils/utils.h"
 
 namespace ftrl {
@@ -15,18 +17,11 @@ struct ftrl_model_unit {
   std::mutex mtx;
 
   // init bias
-  ftrl_model_unit() {
-    wi = 0.0;
-    w_ni = 0.0;
-    w_zi = 0.0;
-  }
+  ftrl_model_unit() : wi(0.0), w_ni(0.0), w_zi(0.0) {}
 
   // init linear
-  ftrl_model_unit(float mean, float stddev) {
-    wi = utils::gaussian(mean, stddev);
-    w_ni = 0.0;
-    w_zi = 0.0;
-  }
+  ftrl_model_unit(float mean, float stddev)
+    : wi(utils::gaussian(mean, stddev)), w_ni(0.0), w_zi(0.0) {}
 
   //init fm
   ftrl_model_unit(float mean, float stddev, int n_factors)
@@ -44,7 +39,7 @@ struct ftrl_model_unit {
   // init ffm
   ftrl_model_unit(float mean, float stddev, int n_factors, int n_fields)
       : ftrl_model_unit(mean, stddev) {
-    int v_size = n_factors * n_fields;
+    const int v_size = n_factors * n_fields;
     vi.resize(v_size);
     v_ni.resize(v_size);
     v_zi.resize(v_size);
@@ -55,14 +50,11 @@ struct ftrl_model_unit {
     }
   }
 
-  explicit ftrl_model_unit(const std::string &value) {  // todo
-    wi = stof(value);
-    w_ni = 0.;
-    w_zi = 0.;
-  }
+  explicit ftrl_model_unit(const std::string &value)  // todo
+    : wi(stof(value)), w_ni(0.0), w_zi(0.0) {}
 
   void reinit_vi(float mean, float stddev) {
-    for (float &f : vi) {
+    for (float &f : vi) {  // NOLINT
       f = utils::gaussian(mean, stddev);
     }
   }

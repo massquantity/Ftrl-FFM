@@ -13,11 +13,17 @@
 
 class ThreadPool {
 public:
-  ThreadPool(size_t n_threads);
+  explicit ThreadPool(size_t n_threads);
   ~ThreadPool();
 
-  template<class F, class... Args>
-  auto enqueue(F&& f, Args&&... args)
+  ThreadPool(const ThreadPool&) = delete;
+  ThreadPool(ThreadPool&&) = delete;
+
+  ThreadPool &operator=(const ThreadPool &) = delete;
+  ThreadPool &operator=(ThreadPool &&) = delete;
+
+  template<typename F, typename... Args>
+  auto enqueue(F&& f, Args&&... args)  // NOLINT
     -> std::future<typename std::result_of<F(Args...)>::type>;
 
   void synchronize(int wait_count);
@@ -58,21 +64,22 @@ inline ThreadPool::ThreadPool(size_t n_threads) {
   }
 }
 
-template<class F, class... Args>
-auto ThreadPool::enqueue(F&& f, Args&&... args)
+template<typename F, typename... Args>
+auto ThreadPool::enqueue(F&& f, Args&&... args) // NOLINT
     -> std::future<typename std::result_of<F(Args...)>::type> {
   if (stop) {
     throw std::runtime_error("can't enqueue on stopped ThreadPool...");
   }
   using return_type = typename std::result_of<F(Args...)>::type;
-  auto task = std::make_shared<std::packaged_task<return_type()>>(
-      std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-  std::future<return_type> res = task->get_future();
+  std::function<decltype(f(args...))()> func = std::bind(
+      std::forward<F>(f), std::forward<Args>(args)...);
+  auto task_ptr = std::make_shared<std::packaged_task<return_type()>>(func);
+  // std::future<return_type> res = task->get_future();
   std::unique_lock<std::mutex> lock(queue_mutex);
-  thread_queue.emplace([task] { (*task)(); });
+  thread_queue.emplace([task_ptr] { (*task_ptr)(); });
   lock.unlock();
   thread_cv.notify_one();
-  return res;
+  return task_ptr->get_future();
 }
 
 inline void ThreadPool::synchronize(int wait_count) {

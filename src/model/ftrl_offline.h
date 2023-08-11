@@ -2,13 +2,14 @@
 #define FTRL_FFM_FTRL_OFFLINE_H
 
 #include <algorithm>
-#include <numeric>
-#include <random>
 #include <cassert>
 #include <memory>
+#include <numeric>
+#include <random>
 #include <thread>
 #include <omp.h>
 
+#include "ftrl_model.h"
 #include "../eval/loss.h"
 #include "../reader/parser.h"
 #include "../threading/thread_pool.h"
@@ -18,10 +19,10 @@ namespace ftrl {
 
 class FtrlOffline {
 public:
-  explicit FtrlOffline(const trainer_option &opt);
-  double oneEpoch(std::vector<Sample> &samples, bool train = true);
-  double oneEpochBatch(std::vector<Sample> &samples, bool train = true);
-  double oneEpochPool(std::vector<Sample> &samples, bool train = true);
+  explicit FtrlOffline(const config_options &opt);
+  [[maybe_unused]] double one_epoch_openmp(std::vector<Sample> &samples, bool train);
+  double one_epoch_batch(std::vector<Sample> &samples, bool train);
+  double one_epoch_pool(std::vector<Sample> &samples, bool train);
   std::shared_ptr<FtrlModel> pModel;
 
 private:
@@ -31,7 +32,7 @@ private:
   bool use_pool = true;
 };
 
-FtrlOffline::FtrlOffline(const trainer_option &opt)
+FtrlOffline::FtrlOffline(const config_options &opt)
     : w_alpha(opt.w_alpha), w_beta(opt.w_beta), w_l1(opt.w_l1),
       w_l2(opt.w_l2), n_threads(opt.thread_num) {
   if (opt.model_type == "LR") {
@@ -49,7 +50,7 @@ FtrlOffline::FtrlOffline(const trainer_option &opt)
   }
 }
 
-double FtrlOffline::oneEpoch(std::vector<Sample> &samples, bool train) {
+[[maybe_unused]] double FtrlOffline::one_epoch_openmp(std::vector<Sample> &samples, bool train) {
   size_t len = samples.size();
   double total_loss = 0.0;
   std::vector<int> indices(len);
@@ -58,27 +59,27 @@ double FtrlOffline::oneEpoch(std::vector<Sample> &samples, bool train) {
     shuffle(indices.begin(), indices.end(), std::mt19937(std::random_device()()));
   }
   omp_set_num_threads(n_threads);
-// #pragma omp parallel for schedule(static) reduction(+: total_loss, total_count) shared(samples, pModel, w_alpha, w_beta, w_l1, w_l2) private(i, sample) num_threads(4)
+// #pragma omp parallel for schedule(static) reduction(+: total_loss, total_count) shared(samples, model_ptr, w_alpha, w_beta, w_l1, w_l2) private(i, sample) num_threads(4)
   if (train) {
 #pragma omp parallel for simd reduction(+: total_loss) schedule(static)
     for (size_t i = 0; i < len; i++) {
-      Sample &sample = samples[i];
-      float logit = pModel->train(sample.x, sample.y, w_alpha, w_beta, w_l1, w_l2);
+      const Sample &sample = samples[i];
+      const float logit = pModel->train(sample.x, sample.y, w_alpha, w_beta, w_l1, w_l2);
       total_loss += loss(sample.y, logit);
     }
   } else {
 #pragma omp parallel for simd reduction(+: total_loss) schedule(static)
     for (size_t i = 0; i < len; i++) {
-      Sample &sample = samples[i];
-      float logit = pModel->predict(sample.x, false);
+      const Sample &sample = samples[i];
+      const float logit = pModel->predict(sample.x, false);
       total_loss += loss(sample.y, logit);
     }
   }
-  return total_loss / len;
+  return total_loss / static_cast<double>(len);
 }
 
-double FtrlOffline::oneEpochBatch(std::vector<Sample> &samples, bool train) {
-  size_t total_num = samples.size();
+double FtrlOffline::one_epoch_batch(std::vector<Sample> &samples, bool train) {
+  const size_t total_num = samples.size();
   std::vector<int> indices(total_num);
   std::iota(indices.begin(), indices.end(), 0);
   if (train) {
@@ -88,7 +89,7 @@ double FtrlOffline::oneEpochBatch(std::vector<Sample> &samples, bool train) {
   auto one_thread = [&](size_t idx, size_t start, size_t end) {
     double tmp_loss = 0.0;
     for (auto i = start; i < end; i++) {
-      Sample &sample = samples[i];
+      const Sample &sample = samples[i];
       auto logit = train ?
           pModel->train(sample.x, sample.y, w_alpha, w_beta, w_l1, w_l2) :
           pModel->predict(sample.x, false);
@@ -98,24 +99,22 @@ double FtrlOffline::oneEpochBatch(std::vector<Sample> &samples, bool train) {
   };
 
   std::vector<std::thread> total_threads;
-  size_t unit = std::ceil(total_num / n_threads);
+  const size_t unit = std::ceil(total_num / n_threads);
   assert(unit > 0);
   for (size_t i = 0; i < n_threads; i++) {
-    size_t start = i * unit;
-    size_t end = std::min(start + unit, total_num);
-    total_threads.emplace_back(std::thread([=] {
-      one_thread(i, start, end);
-    }));
+    const size_t start = i * unit;
+    const size_t end = std::min(start + unit, total_num);
+    total_threads.emplace_back([=] { one_thread(i, start, end); });
   }
   for (auto &t : total_threads) {
     t.join();
   }
-  double total_loss = std::accumulate(losses.begin(), losses.end(), 0.0);
-  return total_loss / total_num;
+  const double total_loss = std::accumulate(losses.begin(), losses.end(), 0.0);
+  return total_loss / static_cast<double>(total_num);
 }
 
-double FtrlOffline::oneEpochPool(std::vector<Sample> &samples, bool train) {
-  size_t total_num = samples.size();
+double FtrlOffline::one_epoch_pool(std::vector<Sample> &samples, bool train) {
+  const size_t total_num = samples.size();
   std::vector<int> indices(total_num);
   std::iota(indices.begin(), indices.end(), 0);
   if (train) {
@@ -125,7 +124,7 @@ double FtrlOffline::oneEpochPool(std::vector<Sample> &samples, bool train) {
   auto one_thread = [&](size_t idx, size_t start, size_t end) {
     double tmp_loss = 0.0;
     for (auto i = start; i < end; i++) {
-      Sample &sample = samples[i];
+      const Sample &sample = samples[i];
       auto logit = train ?
                    pModel->train(sample.x, sample.y, w_alpha, w_beta, w_l1, w_l2) :
                    pModel->predict(sample.x, false);
@@ -134,16 +133,16 @@ double FtrlOffline::oneEpochPool(std::vector<Sample> &samples, bool train) {
     losses[idx] = tmp_loss;
   };
 
-  size_t unit = std::ceil(total_num / n_threads);
+  const size_t unit = std::ceil(total_num / n_threads);
   assert(unit > 0);
   for (int i = 0; i < n_threads; i++) {
-    size_t start = i * unit;
-    size_t end = std::min(start + unit, total_num);
+    const size_t start = i * unit;
+    const size_t end = std::min(start + unit, total_num);
     thread_pool->enqueue(std::bind(one_thread, i, start, end));
   }
   thread_pool->synchronize(n_threads);
-  double total_loss = std::accumulate(losses.begin(), losses.end(), 0.0);
-  return total_loss / total_num;
+  const double total_loss = std::accumulate(losses.begin(), losses.end(), 0.0);
+  return total_loss / static_cast<double>(total_num);
 }
 
 }

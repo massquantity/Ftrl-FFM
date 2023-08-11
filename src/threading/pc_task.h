@@ -17,11 +17,11 @@
 class PcTask {
 public:
   PcTask() = default;
-  PcTask(int n_threads, bool cmd = false): n_threads(n_threads), cmd(cmd) { }
-  void openFile(const std::string &file_path);
-  void rewindFile();
+  PcTask(int n_threads, bool cmd): n_threads(n_threads), cmd(cmd) { }
+  void open_file(const std::string &file_path);
+  void rewind_file();
   void run();
-  virtual void run_task(std::vector<std::string> &data_buffer, int t = 0) = 0;
+  virtual void run_task(std::vector<std::string> &data_buffer, int t) = 0;
   virtual ~PcTask() = default;
 
 private:
@@ -30,26 +30,26 @@ private:
   std::condition_variable pro_cv, con_cv;
   std::queue<std::string> buffer;
   std::vector<std::thread> thread_vec;
-  int n_threads;
+  int n_threads = 1;
   int buf_size = 20000;
   int log_num = 1000000;
-  std::atomic<bool> input_end;
-  bool cmd;
-  void producerThread();
-  void consumerThread(int t);
+  std::atomic<bool> input_end{ false };
+  bool cmd{ false };
+  void producer_thread();
+  void consumer_thread(int t);
 };
 
-void PcTask::openFile(const std::string &file_path) {
+void PcTask::open_file(const std::string &file_path) {
   if (!cmd) {
     ifs.open(file_path, std::istream::in | std::istream::binary);
     if (!ifs.good()) {
-      fprintf(stderr, "open file <%s> error. \n", file_path.c_str());
-      exit(EXIT_FAILURE);
+      fprintf(stderr, "open file <%s> error. \n", file_path.c_str());  // NOLINT
+      exit(EXIT_FAILURE);  // NOLINT
     }
   }
 }
 
-void PcTask::rewindFile() {
+void PcTask::rewind_file() {
   if (ifs.eof()) {
     ifs.clear();
     ifs.seekg(0L, std::ifstream::beg);
@@ -59,15 +59,15 @@ void PcTask::rewindFile() {
 void PcTask::run() {
   input_end = false;
   thread_vec.clear();
-  thread_vec.emplace_back(std::thread(&PcTask::producerThread, this));
+  thread_vec.emplace_back(std::thread(&PcTask::producer_thread, this));  // NOLINT
   for (int i = 0; i < n_threads; i++) {
-    thread_vec.emplace_back(std::thread(&PcTask::consumerThread, this, i));
+    thread_vec.emplace_back(std::thread(&PcTask::consumer_thread, this, i));  // NOLINT
   }
   for (std::thread &t : thread_vec)
     t.join();
 }
 
-void PcTask::producerThread() {
+void PcTask::producer_thread() {
   std::string line;
   int line_num = 0;
   while (true) {
@@ -90,7 +90,7 @@ void PcTask::producerThread() {
   }
 }
 
-void PcTask::consumerThread(int t) {
+void PcTask::consumer_thread(int t) {
   thread_local bool thread_end = false;
   std::vector<std::string> input_vec;
   input_vec.reserve(buf_size);
