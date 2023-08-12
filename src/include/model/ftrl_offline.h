@@ -19,7 +19,6 @@ namespace ftrl {
 class FtrlOffline {
 public:
   explicit FtrlOffline(const config_options &opt);
-  [[maybe_unused]] double one_epoch_openmp(std::vector<Sample> &samples, bool train);
   double one_epoch_batch(std::vector<Sample> &samples, bool train);
   double one_epoch_pool(std::vector<Sample> &samples, bool train);
   std::shared_ptr<FtrlModel> pModel;

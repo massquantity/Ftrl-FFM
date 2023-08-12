@@ -1,5 +1,3 @@
-#include <omp.h>
-
 #include "eval/loss.h"
 #include "model/ftrl_offline.h"
 
@@ -21,34 +19,6 @@ FtrlOffline::FtrlOffline(const config_options &opt)
   if (use_pool) {
     thread_pool = std::make_shared<ThreadPool>(n_threads);
   }
-}
-
-[[maybe_unused]] double FtrlOffline::one_epoch_openmp(std::vector<Sample> &samples, bool train) {
-  const size_t len = samples.size();
-  double total_loss = 0.0;
-  std::vector<int> indices(len);
-  std::iota(indices.begin(), indices.end(), 0);
-  if (train) {
-    shuffle(indices.begin(), indices.end(), std::mt19937(std::random_device()()));
-  }
-  omp_set_num_threads(n_threads);
-// #pragma omp parallel for schedule(static) reduction(+: total_loss, total_count) shared(samples, model_ptr, w_alpha, w_beta, w_l1, w_l2) private(i, sample) num_threads(4)
-  if (train) {
-#pragma omp parallel for simd reduction(+: total_loss) schedule(static)
-    for (size_t i = 0; i < len; i++) {
-      const Sample &sample = samples[i];
-      const float logit = pModel->train(sample.x, sample.y, w_alpha, w_beta, w_l1, w_l2);
-      total_loss += loss(sample.y, logit);
-    }
-  } else {
-#pragma omp parallel for simd reduction(+: total_loss) schedule(static)
-    for (size_t i = 0; i < len; i++) {
-      const Sample &sample = samples[i];
-      const float logit = pModel->predict(sample.x, false);
-      total_loss += loss(sample.y, logit);
-    }
-  }
-  return total_loss / static_cast<double>(len);
 }
 
 double FtrlOffline::one_epoch_batch(std::vector<Sample> &samples, bool train) {

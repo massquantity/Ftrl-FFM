@@ -4,7 +4,7 @@ project(Ftrl-FFM)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(CMAKE_BUILD_TYPE RelWithDebInfo)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -O3")  # -pthread
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")  # -fopenmp -pthread
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ./bin)
 
 add_subdirectory(src)
