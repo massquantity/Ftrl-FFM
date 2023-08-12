@@ -1,4 +1,4 @@
-#include "ftrl_task.h"
+#include "task/ftrl_task.h"
 
 int main(int argc, char *argv[]) {
   std::istream::sync_with_stdio(false);

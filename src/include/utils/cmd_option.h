@@ -4,16 +4,15 @@
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "../reader/file_utils.h"
-
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "err_ovl_no_viable_member_function_in_call"
 #pragma ide diagnostic ignored "CannotResolve"
-std::string train_help() {
+inline std::string train_help() {
   return std::string( // NOLINT(modernize-return-braced-init-list)
       "\nUsage: ./lr_train [<options>]   OR   cat sample | ./lr_train [<options>]"  // todo: change options
       "\n"
@@ -35,24 +34,65 @@ std::string train_help() {
 }
 #pragma clang diagnostic pop
 
-static bool assign_bool(std::string arg) {
-  std::transform(arg.begin(), arg.end(), arg.begin(),
-                 [&](char c) { return tolower(c); });
-  return arg == "true" || arg == "1";
-}
-
-static std::string upper(std::string arg) {
-  std::transform(arg.begin(), arg.end(), arg.begin(),
-                 [](unsigned char c) { return std::toupper(c); });
-  return arg;
-}
-
 static std::vector<std::string> argv_to_args(int argc, char *argv[]) {
   std::vector<std::string> args;
   for (int i = 1; i < argc; i++) {
     args.emplace_back(std::string(argv[i]));
   }
   return args;
+}
+
+static inline bool assign_bool(std::string arg) {
+  std::transform(arg.begin(), arg.end(), arg.begin(),
+                 [&](char c) { return tolower(c); });
+  return arg == "true" || arg == "1";
+}
+
+static inline std::string upper(std::string arg) {
+  std::transform(arg.begin(), arg.end(), arg.begin(),
+                 [](unsigned char c) { return std::toupper(c); });
+  return arg;
+}
+
+static inline void split_string(const std::string &line,
+                                const std::string &delimiter,
+                                std::vector<std::string> &v) {
+  std::string::size_type begin = line.find_first_not_of(delimiter, 0);
+  std::string::size_type end = line.find_first_of(delimiter, begin);
+  while (begin != std::string::npos || end != std::string::npos) {
+    v.push_back(line.substr(begin, end - begin));
+    begin = line.find_first_not_of(delimiter, end);
+    end = line.find_first_of(delimiter, begin);
+  }
+}
+
+static std::string detect_file_type(const std::string &file_path) {
+  std::ifstream ifs(file_path);
+  if (!ifs.good()) {
+    std::cerr << "fail to open " << file_path << std::endl;
+    exit(EXIT_FAILURE);  // NOLINT
+  }
+  std::string line;
+  std::getline(ifs, line);
+  ifs.close();
+  std::vector<std::string> split_line;
+  split_string(line, " ", split_line);
+  int count = 0;
+  for (const char c : split_line[1]) {
+    if (c == ':') {
+      count++;
+    }
+  }
+  if (count == 1) {
+    return "libsvm";
+  }
+  else if (count == 2) {
+    return "libffm";
+  }
+  else {
+    std::cerr << "unknown file format..." << std::endl;
+    exit(EXIT_FAILURE);  // NOLINT
+  }
 }
 
 struct config_options { // NOLINT(altera-struct-pack-align)

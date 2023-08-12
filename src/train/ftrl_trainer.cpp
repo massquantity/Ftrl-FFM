@@ -1,11 +1,7 @@
-#ifndef FTRL_FFM_FTRL_LEARN_H
-#define FTRL_FFM_FTRL_LEARN_H
-
 #include <cmath>
-#include <tuple>
+#include <mutex>
 
-#include "../model/ftrl_unit.h"
-#include "../utils/utils.h"
+#include "train/ftrl_trainer.h"
 
 namespace ftrl {
 
@@ -161,5 +157,3 @@ void update_ffm_nz(std::vector<std::shared_ptr<ftrl_model_unit>>& params,
 }
 
 }
-
-#endif //FTRL_FFM_FTRL_LEARN_H

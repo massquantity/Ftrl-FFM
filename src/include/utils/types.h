@@ -1,5 +1,5 @@
-#ifndef FTRL_FFM_COMMON_H
-#define FTRL_FFM_COMMON_H
+#ifndef FTRL_FFM_TYPES_H
+#define FTRL_FFM_TYPES_H
 
 #include <cstdint>
 #include <string>
@@ -19,7 +19,7 @@ typedef uint64_t uint64;
 typedef std::tuple<int, int, float> feat;
 typedef std::vector<feat> feat_vec;
 
-static const std::string splitter = " ";
-static const std::string innerSplitter = ":";
+static const constexpr char *splitter = " ";
+static const constexpr char *innerSplitter = ":";
 
-#endif //FTRL_FFM_COMMON_H
+#endif //FTRL_FFM_TYPES_H

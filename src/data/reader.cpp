@@ -1,6 +1,3 @@
-#ifndef FTRL_FFM_READER_H
-#define FTRL_FFM_READER_H
-
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -8,19 +5,9 @@
 #include <regex>
 #include <thread>
 
-#include "parser.h"
+#include "data/reader.h"
 
 namespace ftrl {
-
-class Reader {
-public:
-  explicit Reader(const std::string &file_type);
-  void load_from_file(const std::string &file_name, int n_threads);
-  [[maybe_unused]] [[nodiscard]] size_t getSize() const { return dataSize; }
-  size_t dataSize{0};
-  std::vector<Sample> data;
-  std::shared_ptr<Parser> parser;
-};
 
 Reader::Reader(const std::string &file_type) {
   if (file_type == "libsvm") {
@@ -96,5 +83,3 @@ void Reader::load_from_file(const std::string &file_name, int n_threads) {
 }
 
 }
-
-#endif //FTRL_FFM_READER_H

@@ -1,36 +1,9 @@
-#ifndef FTRL_FFM_FTRL_OFFLINE_H
-#define FTRL_FFM_FTRL_OFFLINE_H
-
-#include <algorithm>
-#include <cassert>
-#include <memory>
-#include <numeric>
-#include <random>
-#include <thread>
 #include <omp.h>
 
-#include "ftrl_model.h"
-#include "../eval/loss.h"
-#include "../reader/parser.h"
-#include "../threading/thread_pool.h"
-#include "../utils/cmd_option.h"
+#include "eval/loss.h"
+#include "model/ftrl_offline.h"
 
 namespace ftrl {
-
-class FtrlOffline {
-public:
-  explicit FtrlOffline(const config_options &opt);
-  [[maybe_unused]] double one_epoch_openmp(std::vector<Sample> &samples, bool train);
-  double one_epoch_batch(std::vector<Sample> &samples, bool train);
-  double one_epoch_pool(std::vector<Sample> &samples, bool train);
-  std::shared_ptr<FtrlModel> pModel;
-
-private:
-  float w_alpha, w_beta, w_l1, w_l2;
-  int n_threads;
-  std::shared_ptr<ThreadPool> thread_pool;
-  bool use_pool = true;
-};
 
 FtrlOffline::FtrlOffline(const config_options &opt)
     : w_alpha(opt.w_alpha), w_beta(opt.w_beta), w_l1(opt.w_l1),
@@ -51,7 +24,7 @@ FtrlOffline::FtrlOffline(const config_options &opt)
 }
 
 [[maybe_unused]] double FtrlOffline::one_epoch_openmp(std::vector<Sample> &samples, bool train) {
-  size_t len = samples.size();
+  const size_t len = samples.size();
   double total_loss = 0.0;
   std::vector<int> indices(len);
   std::iota(indices.begin(), indices.end(), 0);
@@ -91,8 +64,8 @@ double FtrlOffline::one_epoch_batch(std::vector<Sample> &samples, bool train) {
     for (auto i = start; i < end; i++) {
       const Sample &sample = samples[i];
       auto logit = train ?
-          pModel->train(sample.x, sample.y, w_alpha, w_beta, w_l1, w_l2) :
-          pModel->predict(sample.x, false);
+                   pModel->train(sample.x, sample.y, w_alpha, w_beta, w_l1, w_l2) :
+                   pModel->predict(sample.x, false);
       tmp_loss += loss(sample.y, logit);
     }
     losses[idx] = tmp_loss;
@@ -146,5 +119,3 @@ double FtrlOffline::one_epoch_pool(std::vector<Sample> &samples, bool train) {
 }
 
 }
-
-#endif //FTRL_FFM_FTRL_OFFLINE_H

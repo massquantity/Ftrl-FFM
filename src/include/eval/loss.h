@@ -3,8 +3,8 @@
 
 #include <cmath>
 
-double loss(int y, double pred) {
-  return log1p(exp(-y * pred));
+inline double loss(int y, double pred) {
+  return std::log1p(std::exp(-y * pred));
 }
 
 #endif //FTRL_FFM_LOSS_H

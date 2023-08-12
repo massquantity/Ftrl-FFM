@@ -2,9 +2,6 @@
 #define FTRL_FFM_UTILS_H
 
 #include <chrono>
-#include <memory>
-#include <string>
-#include <vector>
 #include <random>
 
 using namespace std::chrono;
@@ -34,10 +31,5 @@ struct utils {
     return static_cast<double>(nano_time) * nanoseconds::period::num / nanoseconds::period::den;
   }
 };
-
-template<typename T, typename... U>
-std::unique_ptr<T> make_unique(U&&... params) {
-  return std::unique_ptr<T>(new T(std::forward<U>(params)...));
-}
 
 #endif //FTRL_FFM_UTILS_H

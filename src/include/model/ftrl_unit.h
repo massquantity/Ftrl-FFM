@@ -2,8 +2,9 @@
 #define FTRL_FFM_FTRL_UNIT_H
 
 #include <mutex>
+#include <vector>
 
-#include "../utils/utils.h"
+#include "utils/utils.h"
 
 namespace ftrl {
 
@@ -61,7 +62,7 @@ struct ftrl_model_unit {
 
   friend inline std::ostream &operator<<(std::ostream &os,  // todo
                                          const ftrl_model_unit &mu) {
-    os << mu.wi;
+    // os << mu.wi;
     return os;
   }
 };
