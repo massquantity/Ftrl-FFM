@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "data/parser.h"

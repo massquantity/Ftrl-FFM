@@ -85,7 +85,7 @@ void update_linear_nz(std::vector<std::shared_ptr<ftrl_model_unit>> &params,
                       float w_alpha, float mult) {
   for (int i = 0; i <= feat_len; i++) {
     ftrl_model_unit &mu = *(params[i]);
-    const float xi = i < feat_len ? std::get<2>(x[i]) : 1.0;
+    const float xi = i < feat_len ? std::get<2>(x[i]) : 1.0f;
     std::unique_lock<std::mutex> lck(mu.mtx);
     const float w_gi = mult * xi;
     const float w_si = 1.0f / w_alpha * (sqrtf(mu.w_ni + w_gi * w_gi) - sqrtf(mu.w_ni));

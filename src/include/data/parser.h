@@ -2,6 +2,7 @@
 #define FTRL_FFM_PARSER_H
 
 #include <regex>
+#include <string>
 
 #include "data/sample.h"
 

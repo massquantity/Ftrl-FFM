@@ -7,6 +7,7 @@
 #include <numeric>
 #include <random>
 #include <thread>
+#include <vector>
 
 #include "data/parser.h"
 #include "data/sample.h"

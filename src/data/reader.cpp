@@ -73,7 +73,7 @@ void Reader::load_from_file(const std::string &file_name, int n_threads) {
   dataSize = totalSize;
   size_t cur = 0;
   for (const auto &pd : partition_data) {
-    std::move(pd.begin(), pd.end(), data.begin() + cur);
+    std::move(pd.begin(), pd.end(), data.begin() + cur);  // NOLINT
     cur += pd.size();
   }
   printf("Total number of samples loaded: %zu\n", totalSize);

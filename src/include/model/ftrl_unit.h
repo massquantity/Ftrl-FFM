@@ -2,6 +2,7 @@
 #define FTRL_FFM_FTRL_UNIT_H
 
 #include <mutex>
+#include <string>
 #include <vector>
 
 #include "utils/utils.h"
