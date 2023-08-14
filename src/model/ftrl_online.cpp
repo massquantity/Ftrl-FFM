@@ -4,17 +4,20 @@
 namespace ftrl {
 
 FtrlOnline::FtrlOnline(const config_options &opt)
-    : PcTask(opt.thread_num, opt.cmd), w_alpha(opt.w_alpha), w_beta(opt.w_beta),
-      w_l1(opt.w_l1), w_l2(opt.w_l2), n_threads(opt.thread_num) {
+    : PcTask(opt.thread_num, opt.cmd),
+      w_alpha(opt.w_alpha),
+      w_beta(opt.w_beta),
+      w_l1(opt.w_l1),
+      w_l2(opt.w_l2),
+      n_threads(opt.thread_num) {
   if (opt.model_type == "LR") {
-    model_ptr = std::make_shared<FtrlModel>(
-        opt.init_mean, opt.init_stddev, opt.model_type);
+    model_ptr = std::make_shared<FtrlModel>(opt.init_mean, opt.init_stddev, opt.model_type);
   } else if (opt.model_type == "FM") {
-    model_ptr = std::make_shared<FtrlModel>(
-        opt.init_mean, opt.init_stddev, opt.n_factors, opt.model_type);
+    model_ptr =
+        std::make_shared<FtrlModel>(opt.init_mean, opt.init_stddev, opt.n_factors, opt.model_type);
   } else if (opt.model_type == "FFM") {
-    model_ptr = std::make_shared<FtrlModel>(
-        opt.init_mean, opt.init_stddev, opt.n_factors, opt.n_fields, opt.model_type);
+    model_ptr = std::make_shared<FtrlModel>(opt.init_mean, opt.init_stddev, opt.n_factors,
+                                            opt.n_fields, opt.model_type);
   }
   if (opt.file_type == "libsvm") {
     parser = std::make_shared<LibsvmParser>();
@@ -59,4 +62,4 @@ double FtrlOnline::get_loss() {
   return model_ptr->output_model(ofs);
 }
 
-}
+}  // namespace ftrl

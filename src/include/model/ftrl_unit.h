@@ -22,11 +22,10 @@ struct ftrl_model_unit {
 
   // init linear
   ftrl_model_unit(float mean, float stddev)
-    : wi(utils::gaussian(mean, stddev)), w_ni(0.0), w_zi(0.0) {}
+      : wi(utils::gaussian(mean, stddev)), w_ni(0.0), w_zi(0.0) {}
 
-  //init fm
-  ftrl_model_unit(float mean, float stddev, int n_factors)
-      : ftrl_model_unit(mean, stddev) {
+  // init fm
+  ftrl_model_unit(float mean, float stddev, int n_factors) : ftrl_model_unit(mean, stddev) {
     vi.resize(n_factors);
     v_ni.resize(n_factors);
     v_zi.resize(n_factors);
@@ -51,8 +50,8 @@ struct ftrl_model_unit {
     }
   }
 
-  explicit ftrl_model_unit(const std::string &value)  // todo
-    : wi(stof(value)), w_ni(0.0), w_zi(0.0) {}
+  // todo
+  explicit ftrl_model_unit(const std::string &value) : wi(stof(value)), w_ni(0.0), w_zi(0.0) {}
 
   void reinit_vi(float mean, float stddev) {
     for (float &f : vi) {  // NOLINT
@@ -60,13 +59,13 @@ struct ftrl_model_unit {
     }
   }
 
-  friend inline std::ostream &operator<<(std::ostream &os,  // todo
-                                         const ftrl_model_unit &mu) {
+  // todo
+  friend inline std::ostream &operator<<(std::ostream &os, const ftrl_model_unit &mu) {
     // os << mu.wi;
     return os;
   }
 };
 
-}
+}  // namespace ftrl
 
-#endif //FTRL_FFM_FTRL_UNIT_H
+#endif  // FTRL_FFM_FTRL_UNIT_H

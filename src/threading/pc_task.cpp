@@ -4,8 +4,10 @@ void PcTask::open_file(const std::string &file_path) {
   if (!cmd) {
     ifs.open(file_path, std::istream::in | std::istream::binary);
     if (!ifs.good()) {
-      fprintf(stderr, "open file <%s> error. \n", file_path.c_str());  // NOLINT
-      exit(EXIT_FAILURE);  // NOLINT
+      // NOLINTNEXTLINE
+      fprintf(stderr, "open file <%s> error. \n", file_path.c_str());
+      // NOLINTNEXTLINE
+      exit(EXIT_FAILURE);
     }
   }
 }
@@ -24,8 +26,9 @@ void PcTask::run() {
   for (int i = 0; i < n_threads; i++) {
     thread_vec.emplace_back(std::thread(&PcTask::consumer_thread, this, i));  // NOLINT
   }
-  for (std::thread &t : thread_vec)
+  for (std::thread &t : thread_vec) {
     t.join();
+  }
 }
 
 void PcTask::producer_thread() {

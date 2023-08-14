@@ -1,58 +1,54 @@
 #ifndef FTRL_FFM_THREAD_POOL_H
 #define FTRL_FFM_THREAD_POOL_H
 
-#include <vector>
-#include <queue>
-#include <memory>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <future>
-#include <functional>
 #include <atomic>
+#include <condition_variable>
+#include <functional>
+#include <future>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <thread>
+#include <vector>
 
 class ThreadPool {
-public:
+ public:
   explicit ThreadPool(size_t n_threads);
   ~ThreadPool();
 
-  ThreadPool(const ThreadPool&) = delete;
-  ThreadPool(ThreadPool&&) = delete;
+  ThreadPool(const ThreadPool &) = delete;
+  ThreadPool(ThreadPool &&) = delete;
 
   ThreadPool &operator=(const ThreadPool &) = delete;
   ThreadPool &operator=(ThreadPool &&) = delete;
 
   template <typename F, typename... Args>
-  auto enqueue(F &&f, Args &&...args)
-      -> std::future<typename std::invoke_result<F, Args...>::type>;
+  auto enqueue(F &&f, Args &&...args) -> std::future<typename std::invoke_result<F, Args...>::type>;
 
   void synchronize(int wait_count);
-  size_t get_num_threads();
+  size_t get_num_threads() const;  // NOLINT
 
-private:
+ private:
   std::vector<std::thread> workers;
   std::queue<std::function<void()>> thread_queue;
   std::mutex queue_mutex;
   std::condition_variable thread_cv;
   std::mutex sync_mutex;
   std::condition_variable sync_cv;
-  std::atomic<bool> stop { false };
-  std::atomic<int> sync_var { 0 };
+  std::atomic<bool> stop{false};
+  std::atomic<int> sync_var{0};
 };
 
 inline ThreadPool::ThreadPool(size_t n_threads) {
   for (size_t i = 0; i < n_threads; i++) {
     workers.emplace_back([&] {
       while (true) {
-        std::function<void()> task;
         std::unique_lock<std::mutex> lock(queue_mutex);
-        thread_cv.wait(lock, [&] {
-          return stop || !thread_queue.empty();
-        });
+        thread_cv.wait(lock, [&] { return stop || !thread_queue.empty(); });
         if (stop && thread_queue.empty()) {
           return;
         }
-        task = std::move(thread_queue.front());
+        auto task = std::move(thread_queue.front());
         thread_queue.pop();
         lock.unlock();
         // perform function
@@ -85,12 +81,12 @@ auto ThreadPool::enqueue(F &&f, Args &&...args)
 inline void ThreadPool::synchronize(int wait_count) {
   {
     std::unique_lock<std::mutex> lock(sync_mutex);
-    sync_cv.wait(lock, [&] { return sync_var == wait_count;} );
+    sync_cv.wait(lock, [&] { return sync_var == wait_count; });
   }
   sync_var = 0;
 }
 
-inline size_t ThreadPool::get_num_threads() {
+inline size_t ThreadPool::get_num_threads() const {
   return workers.size();
 }
 
@@ -102,4 +98,4 @@ inline ThreadPool::~ThreadPool() {
   }
 }
 
-#endif //FTRL_FFM_THREAD_POOL_H
+#endif  // FTRL_FFM_THREAD_POOL_H

@@ -1,23 +1,26 @@
-#include <iostream>
 #include <cstring>
+#include <iostream>
 
 #include "data/parser.h"
 
 namespace ftrl {
 
+static const constexpr char *SPLITTER = " ";
+static const constexpr char *INNER_SPLITTER = ":";
+
 void LibsvmParser::parse(const std::string &line, Sample &sample) {
   sample.x.clear();
-  std::string::size_type begin = line.find_first_not_of(splitter, 0);
-  std::string::size_type end = line.find_first_of(splitter, begin);
+  std::string::size_type begin = line.find_first_not_of(SPLITTER, 0);
+  std::string::size_type end = line.find_first_of(SPLITTER, begin);
   const int label = std::stoi(line.substr(begin, end - begin));
   sample.y = label > 0 ? 1 : -1;
 
   const std::string::size_type lineLength = line.size();
-  while (end < lineLength) {  // NOLINT
+  while (end < lineLength) {
     const int field = 0;  // dummy field
-    begin = line.find_first_not_of(splitter, end);
+    begin = line.find_first_not_of(SPLITTER, end);
     if (begin == std::string::npos) break;
-    end = line.find_first_of(innerSplitter, begin);
+    end = line.find_first_of(INNER_SPLITTER, begin);
     if (end == std::string::npos) {
       std::cout << "wrong input: " << line << std::endl;
       throw std::out_of_range(line);
@@ -29,7 +32,7 @@ void LibsvmParser::parse(const std::string &line, Sample &sample) {
       std::cout << "wrong input: " << line << std::endl;
       throw std::out_of_range(line);
     }
-    end = line.find_first_of(splitter, begin);
+    end = line.find_first_of(SPLITTER, begin);
     const float value = stof(line.substr(begin, end - begin));
     if (value != 0.0) {
       sample.x.emplace_back(field, feat, value);
@@ -39,12 +42,12 @@ void LibsvmParser::parse(const std::string &line, Sample &sample) {
 
 [[maybe_unused]] void FFMParser::parseFFM(const std::string &line, Sample &sample) {
   sample.x.clear();
-  const std::string::size_type begin = line.find_first_not_of(splitter, 0);
-  const std::string::size_type end = line.find_first_of(splitter, begin);
+  const std::string::size_type begin = line.find_first_not_of(SPLITTER, 0);
+  const std::string::size_type end = line.find_first_of(SPLITTER, begin);
   const int label = std::stoi(line.substr(begin, end - begin));
   sample.y = label > 0 ? 1 : -1;
 
-  std::sregex_iterator it {line.begin(), line.end(), reg};
+  std::sregex_iterator it{line.begin(), line.end(), reg};
   const std::sregex_iterator end_it;
   for (; it != end_it; ++it) {
     const int field = stoi(it->str(1));
@@ -58,16 +61,16 @@ void LibsvmParser::parse(const std::string &line, Sample &sample) {
 
 void FFMParser::parse(const std::string &line, Sample &sample) {
   sample.x.clear();
-  std::string::size_type begin = line.find_first_not_of(splitter, 0);
-  std::string::size_type end = line.find_first_of(splitter, begin);
+  std::string::size_type begin = line.find_first_not_of(SPLITTER, 0);
+  std::string::size_type end = line.find_first_of(SPLITTER, begin);
   const int label = std::stoi(line.substr(begin, end - begin));
   sample.y = label > 0 ? 1 : -1;
 
   const std::string::size_type lineLength = line.size();
-  while (end < lineLength) {  // NOLINT
-    begin = line.find_first_not_of(splitter, end);
+  while (end < lineLength) {
+    begin = line.find_first_not_of(SPLITTER, end);
     if (begin == std::string::npos) break;
-    end = line.find_first_of(innerSplitter, begin);
+    end = line.find_first_of(INNER_SPLITTER, begin);
     if (end == std::string::npos) {
       std::cout << "wrong input: " << line << std::endl;
       throw std::out_of_range(line);
@@ -79,7 +82,7 @@ void FFMParser::parse(const std::string &line, Sample &sample) {
       std::cout << "wrong input: " << line << std::endl;
       throw std::out_of_range(line);
     }
-    end = line.find_first_of(innerSplitter, begin);
+    end = line.find_first_of(INNER_SPLITTER, begin);
     if (end == std::string::npos) {
       std::cout << "wrong input: " << line << std::endl;
       throw std::out_of_range(line);
@@ -91,7 +94,7 @@ void FFMParser::parse(const std::string &line, Sample &sample) {
       std::cout << "wrong input: " << line << std::endl;
       throw std::out_of_range(line);
     }
-    end = line.find_first_of(splitter, begin);
+    end = line.find_first_of(SPLITTER, begin);
     const float value = std::stof(line.substr(begin, end - begin));
     if (value != 0.0) {
       sample.x.emplace_back(field, feat, value);
@@ -101,8 +104,8 @@ void FFMParser::parse(const std::string &line, Sample &sample) {
 
 [[maybe_unused]] void FFMParser::parseCFFM(const std::string &line, Sample &sample) {
   sample.x.clear();
-  const std::string::size_type begin = line.find_first_not_of(splitter, 0);
-  const std::string::size_type end = line.find_first_of(splitter, begin);
+  const std::string::size_type begin = line.find_first_not_of(SPLITTER, 0);
+  const std::string::size_type end = line.find_first_of(SPLITTER, begin);
   const int label = atoi(line.substr(begin, end - begin).c_str());  // NOLINT
   sample.y = label > 0 ? 1 : -1;
 
@@ -124,7 +127,7 @@ void FFMParser::parse(const std::string &line, Sample &sample) {
     }
   }
   // NOLINTEND
-  delete [] buffer;
+  delete[] buffer;
 }
 
-}
+}  // namespace ftrl

@@ -17,7 +17,7 @@ Evaluator::Evaluator(const config_options &opt)
   } else if (opt.file_type == "libffm") {
     parser = std::make_shared<FFMParser>();
   }
-};
+}
 
 void Evaluator::run_task(std::vector<std::string> &data_buffer, int t) {
   double tmp_loss = 0.0;
@@ -58,4 +58,4 @@ Evaluator::~Evaluator() {
   nums.release();
 }
 
-}
+}  // namespace ftrl

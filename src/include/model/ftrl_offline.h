@@ -17,19 +17,19 @@
 namespace ftrl {
 
 class FtrlOffline {
-public:
+ public:
   explicit FtrlOffline(const config_options &opt);
   double one_epoch_batch(std::vector<Sample> &samples, bool train);
   double one_epoch_pool(std::vector<Sample> &samples, bool train);
   std::shared_ptr<FtrlModel> pModel;
 
-private:
+ private:
   float w_alpha, w_beta, w_l1, w_l2;
   int n_threads;
   std::shared_ptr<ThreadPool> thread_pool;
   bool use_pool = true;
 };
 
-}
+}  // namespace ftrl
 
-#endif //FTRL_FFM_FTRL_OFFLINE_H
+#endif  // FTRL_FFM_FTRL_OFFLINE_H

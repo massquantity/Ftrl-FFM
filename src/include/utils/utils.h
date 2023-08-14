@@ -27,7 +27,7 @@ struct utils {
 
   static inline constexpr auto convert_time = [](auto &&time) {
     auto exact_time = static_cast<double>(std::forward<decltype(time)>(time));
-    return  exact_time * numerator / denominator;
+    return exact_time * numerator / denominator;
   };
 
   static decltype(auto) compute_time(clock_time start_time) {

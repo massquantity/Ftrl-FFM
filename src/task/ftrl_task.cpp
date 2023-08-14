@@ -2,10 +2,9 @@
 
 #include "task/ftrl_task.h"
 
-using namespace std::chrono;
-using timer = std::chrono::steady_clock;
-
 namespace ftrl {
+
+using timer = std::chrono::steady_clock;
 
 void FtrlTask::init() {
   if (opt.online) {
@@ -87,4 +86,4 @@ void FtrlTask::eval_offline() {
   printf("eval time: %.4lfs, eval loss: %.4lf\n", eval_time, eval_loss);
 }
 
-}
+}  // namespace ftrl

@@ -1,11 +1,11 @@
-#include <iostream>
+#include <cmath>
 #include <fstream>
+#include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
-#include <vector>
-#include <cmath>
-#include <memory>
 #include <tuple>
+#include <vector>
 
 #include "model/ftrl_model.h"
 #include "train/ftrl_trainer.h"
@@ -13,11 +13,9 @@
 namespace ftrl {
 
 FtrlModel::FtrlModel(float _mean, float _stddev, std::string _model_type)
-    : init_mean(_mean), init_stddev(_stddev), model_type(std::move(_model_type)) {
-}
+    : init_mean(_mean), init_stddev(_stddev), model_type(std::move(_model_type)) {}
 
-FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors,
-                     std::string _model_type)
+FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, std::string _model_type)
     : FtrlModel(_mean, _stddev, std::move(_model_type)) {
   n_factors = _n_factors;  // NOLINT
   sum_vx.resize(n_factors);
@@ -36,14 +34,14 @@ std::shared_ptr<ftrl_model_unit> &FtrlModel::get_or_init_weight(int index) {
   if (auto iter = model_weight.find(index); iter == model_weight.end()) {
     std::scoped_lock<std::mutex> lock(weight_mutex);  // NOLINT
     if (model_type == "LR") {
-      model_weight.insert(std::make_pair(index, std::make_shared<ftrl_model_unit>(
-          init_mean, init_stddev)));
+      model_weight.insert(
+          std::make_pair(index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev)));
     } else if (model_type == "FM") {
-      model_weight.insert(std::make_pair(index, std::make_shared<ftrl_model_unit>(
-          init_mean, init_stddev, n_factors)));
+      model_weight.insert(std::make_pair(
+          index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev, n_factors)));
     } else if (model_type == "FFM") {
-      model_weight.insert(std::make_pair(index, std::make_shared<ftrl_model_unit>(
-          init_mean, init_stddev, n_factors, n_fields)));
+      model_weight.insert(std::make_pair(
+          index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev, n_factors, n_fields)));
     }
   }
   return model_weight[index];
@@ -66,8 +64,9 @@ float FtrlModel::compute_logit(const feat_vec &feats, bool update_model) {
   double result = model_bias->wi;
   for (const auto &feat : feats) {
     auto iter = model_weight.find(std::get<1>(feat));
-    if (iter != model_weight.end())
+    if (iter != model_weight.end()) {
       result += (iter->second->wi * std::get<2>(feat));
+    }
   }
 
   if (model_type == "FM") {
@@ -132,8 +131,8 @@ float FtrlModel::compute_logit(const feat_vec &feats, bool update_model) {
   return static_cast<float>(result);
 }
 
-float FtrlModel::train(const feat_vec &feats, int label,
-                       float w_alpha, float w_beta, float w_l1, float w_l2) {
+float FtrlModel::train(const feat_vec &feats, int label, float w_alpha, float w_beta, float w_l1,
+                       float w_l2) {
   const size_t feat_len = feats.size();
   std::vector<std::shared_ptr<ftrl_model_unit>> params(feat_len + 1);
   for (int i = 0; i < feat_len; i++) {
@@ -172,11 +171,11 @@ void FtrlModel::output_model(std::ofstream &ofs) {
   ofs << ost.str();
 }
 
-[[maybe_unused]] void FtrlModel::debug_print_model()
-{
+[[maybe_unused]] void FtrlModel::debug_print_model() {
   std::cout << "bias " << *model_bias << std::endl;
-  for (auto &iter : model_weight)
+  for (auto &iter : model_weight) {
     std::cout << iter.first << " " << *(iter.second) << std::endl;
+  }
 }
 
 bool FtrlModel::load_model(std::ifstream &ifs) {
@@ -196,4 +195,4 @@ bool FtrlModel::load_model(std::ifstream &ifs) {
   return true;
 }
 
-}
+}  // namespace ftrl

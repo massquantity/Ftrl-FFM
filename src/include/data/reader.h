@@ -11,7 +11,7 @@
 namespace ftrl {
 
 class Reader {
-public:
+ public:
   explicit Reader(const std::string &file_type);
   void load_from_file(const std::string &file_name, int n_threads);
   [[maybe_unused]] [[nodiscard]] size_t getSize() const { return dataSize; }
@@ -20,6 +20,6 @@ public:
   std::shared_ptr<Parser> parser;
 };
 
-}
+}  // namespace ftrl
 
-#endif //FTRL_FFM_READER_H
+#endif  // FTRL_FFM_READER_H

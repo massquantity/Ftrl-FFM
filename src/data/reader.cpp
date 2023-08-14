@@ -1,6 +1,6 @@
 #include <algorithm>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <numeric>
 #include <regex>
 #include <thread>
@@ -54,7 +54,7 @@ void Reader::load_from_file(const std::string &file_name, int n_threads) {
       std::ifstream ifs_t(file_name);
       ifs_t.seekg(partitions[i]);
       std::string line;
-      while (ifs_t.tellg() < partitions[i+1] && std::getline(ifs_t, line)) {
+      while (ifs_t.tellg() < partitions[i + 1] && std::getline(ifs_t, line)) {
         Sample sample;
         parser->parse(line, sample);
         partition_data[i].emplace_back(sample);
@@ -82,4 +82,4 @@ void Reader::load_from_file(const std::string &file_name, int n_threads) {
   printf("time elapsed: %.4lfs\n", dur);
 }
 
-}
+}  // namespace ftrl

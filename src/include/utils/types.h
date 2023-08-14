@@ -19,7 +19,4 @@ typedef uint64_t uint64;
 typedef std::tuple<int, int, float> feat;
 typedef std::vector<feat> feat_vec;
 
-static const constexpr char *splitter = " ";
-static const constexpr char *innerSplitter = ":";
-
-#endif //FTRL_FFM_TYPES_H
+#endif  // FTRL_FFM_TYPES_H

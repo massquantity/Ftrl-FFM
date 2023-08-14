@@ -12,12 +12,10 @@
 namespace ftrl {
 
 class FtrlModel {
-public:
+ public:
   FtrlModel(float _mean, float _stddev, std::string _model_type);
-  FtrlModel(float _mean, float _stddev, int _n_factors,
-            std::string _model_type);
-  FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields,
-            std::string _model_type);
+  FtrlModel(float _mean, float _stddev, int _n_factors, std::string _model_type);
+  FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields, std::string _model_type);
 
   std::shared_ptr<ftrl_model_unit> &get_or_init_weight(int index);
   std::shared_ptr<ftrl_model_unit> &get_or_init_bias();
@@ -26,14 +24,14 @@ public:
 
   float compute_logit(const feat_vec &feats, bool update_model);
 
-  float train(const feat_vec &feats, int label,
-              float w_alpha, float w_beta, float w_l1, float w_l2);
+  float train(const feat_vec &feats, int label, float w_alpha, float w_beta, float w_l1,
+              float w_l2);
 
   void output_model(std::ofstream &ofs);
   [[maybe_unused]] void debug_print_model();
   bool load_model(std::ifstream &ifs);
 
-private:
+ private:
   std::string model_type;
   int n_factors{1};
   int n_fields{1};
@@ -46,6 +44,6 @@ private:
   std::mutex bias_mutex;
 };
 
-}
+}  // namespace ftrl
 
-#endif //FTRL_FFM_FTRL_MODEL_H
+#endif  // FTRL_FFM_FTRL_MODEL_H

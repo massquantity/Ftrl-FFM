@@ -14,7 +14,7 @@
 namespace ftrl {
 
 class FtrlOnline : public PcTask {
-public:
+ public:
   explicit FtrlOnline(const config_options &opt);
   void run_task(std::vector<std::string> &data_buffer, int t) override;
   double get_loss();
@@ -22,7 +22,7 @@ public:
   [[maybe_unused]] void output_model(std::ofstream &ofs);
   std::shared_ptr<FtrlModel> model_ptr;
 
-private:
+ private:
   float w_alpha, w_beta, w_l1, w_l2;
   int n_threads;
   std::vector<double> losses;
@@ -30,6 +30,6 @@ private:
   std::shared_ptr<Parser> parser;
 };
 
-}
+}  // namespace ftrl
 
-#endif //FTRL_FFM_FTRL_ONLINE_H
+#endif  // FTRL_FFM_FTRL_ONLINE_H
