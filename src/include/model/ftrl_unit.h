@@ -1,7 +1,8 @@
 #ifndef FTRL_FFM_FTRL_UNIT_H
 #define FTRL_FFM_FTRL_UNIT_H
 
-#include <mutex>
+#include <iostream>
+#include <shared_mutex>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,7 @@ struct ftrl_model_unit {
   std::vector<float> vi;
   std::vector<float> v_ni;
   std::vector<float> v_zi;
-  std::mutex mtx;
+  std::shared_mutex mtx;
 
   // init bias
   ftrl_model_unit() : wi(0.0), w_ni(0.0), w_zi(0.0) {}
@@ -52,17 +53,8 @@ struct ftrl_model_unit {
   }
 
   // todo
-  explicit ftrl_model_unit(const std::string &value) : wi(stof(value)), w_ni(0.0), w_zi(0.0) {}
-
-  void reinit_vi(float mean, float stddev) {
-    for (float &f : vi) {  // NOLINT
-      f = utils::gaussian(mean, stddev);
-    }
-  }
-
-  // todo
   friend inline std::ostream &operator<<(std::ostream &os, const ftrl_model_unit &mu) {
-    // os << mu.wi;
+    os << mu.wi;
     return os;
   }
 };

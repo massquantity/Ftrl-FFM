@@ -46,12 +46,15 @@ std::shared_ptr<ftrl_model_unit> &FtrlModel::get_or_init_weight(int index) {
       case ModelType::LR:
         model_weight.insert(
             std::make_pair(index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev)));
+        break;
       case ModelType::FM:
         model_weight.insert(std::make_pair(
             index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev, n_factors)));
+        break;
       case ModelType::FFM:
         model_weight.insert(std::make_pair(
             index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev, n_factors, n_fields)));
+        break;
     }
   }
   return model_weight[index];
