@@ -1,7 +1,7 @@
+#include "data/parser.h"
+
 #include <cstring>
 #include <iostream>
-
-#include "data/parser.h"
 
 namespace ftrl {
 

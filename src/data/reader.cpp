@@ -1,11 +1,11 @@
+#include "data/reader.h"
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <numeric>
 #include <regex>
 #include <thread>
-
-#include "data/reader.h"
 
 namespace ftrl {
 

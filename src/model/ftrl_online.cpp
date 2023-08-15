@@ -1,5 +1,6 @@
-#include "eval/loss.h"
 #include "model/ftrl_online.h"
+
+#include "eval/loss.h"
 
 namespace ftrl {
 
@@ -18,7 +19,12 @@ FtrlOnline::FtrlOnline(const config_options &opt)
   } else if (opt.model_type == "FFM") {
     model_ptr = std::make_shared<FtrlModel>(opt.init_mean, opt.init_stddev, opt.n_factors,
                                             opt.n_fields, opt.model_type);
+  } else {
+    std::cout << "Invalid model_type: " << opt.model_type;
+    std::cout << ", expect `LR`, `FM` or `FFM`." << std::endl;
+    throw std::invalid_argument("invalid model_type");
   }
+
   if (opt.file_type == "libsvm") {
     parser = std::make_shared<LibsvmParser>();
   } else if (opt.file_type == "libffm") {

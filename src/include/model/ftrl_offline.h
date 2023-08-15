@@ -28,7 +28,6 @@ class FtrlOffline {
   float w_alpha, w_beta, w_l1, w_l2;
   int n_threads;
   std::shared_ptr<ThreadPool> thread_pool;
-  bool use_pool = true;
 };
 
 }  // namespace ftrl

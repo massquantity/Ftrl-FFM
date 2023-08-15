@@ -14,9 +14,10 @@ namespace ftrl {
 
 class FtrlModel {
  public:
-  FtrlModel(float _mean, float _stddev, std::string _model_type);
-  FtrlModel(float _mean, float _stddev, int _n_factors, std::string _model_type);
-  FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields, std::string _model_type);
+  FtrlModel(float _mean, float _stddev, const std::string &_model_type);
+  FtrlModel(float _mean, float _stddev, int _n_factors, const std::string &_model_type);
+  FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields,
+            const std::string &_model_type);
 
   std::shared_ptr<ftrl_model_unit> &get_or_init_weight(int index);
   std::shared_ptr<ftrl_model_unit> &get_or_init_bias();
@@ -33,7 +34,7 @@ class FtrlModel {
   bool load_model(std::ifstream &ifs);
 
  private:
-  std::string model_type;
+  ModelType model_type;
   int n_factors{1};
   int n_fields{1};
   float init_mean;

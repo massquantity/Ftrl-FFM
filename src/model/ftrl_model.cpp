@@ -1,3 +1,5 @@
+#include "model/ftrl_model.h"
+
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -7,16 +9,23 @@
 #include <tuple>
 #include <vector>
 
-#include "model/ftrl_model.h"
 #include "train/ftrl_trainer.h"
 
 namespace ftrl {
 
-FtrlModel::FtrlModel(float _mean, float _stddev, std::string _model_type)
-    : init_mean(_mean), init_stddev(_stddev), model_type(std::move(_model_type)) {}
+FtrlModel::FtrlModel(float _mean, float _stddev, const std::string &_model_type)
+    : init_mean(_mean), init_stddev(_stddev) {
+  if (_model_type == "LR") {
+    model_type = ModelType::LR;
+  } else if (_model_type == "FM") {
+    model_type = ModelType::FM;
+  } else if (_model_type == "FFM") {
+    model_type = ModelType::FFM;
+  }
+}
 
-FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, std::string _model_type)
-    : FtrlModel(_mean, _stddev, std::move(_model_type)) {
+FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, const std::string &_model_type)
+    : FtrlModel(_mean, _stddev, _model_type) {
   n_factors = _n_factors;  // NOLINT
   sum_vx.resize(n_factors);
   for (int i = 0; i < n_factors; i++) {
@@ -25,23 +34,24 @@ FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, std::string _mo
 }
 
 FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields,
-                     std::string _model_type)
-    : FtrlModel(_mean, _stddev, _n_factors, std::move(_model_type)) {
+                     const std::string &_model_type)
+    : FtrlModel(_mean, _stddev, _n_factors, _model_type) {
   n_fields = _n_fields;  // NOLINT
 }
 
 std::shared_ptr<ftrl_model_unit> &FtrlModel::get_or_init_weight(int index) {
   if (auto iter = model_weight.find(index); iter == model_weight.end()) {
     std::scoped_lock<std::mutex> lock(weight_mutex);  // NOLINT
-    if (model_type == "LR") {
-      model_weight.insert(
-          std::make_pair(index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev)));
-    } else if (model_type == "FM") {
-      model_weight.insert(std::make_pair(
-          index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev, n_factors)));
-    } else if (model_type == "FFM") {
-      model_weight.insert(std::make_pair(
-          index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev, n_factors, n_fields)));
+    switch (model_type) {
+      case ModelType::LR:
+        model_weight.insert(
+            std::make_pair(index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev)));
+      case ModelType::FM:
+        model_weight.insert(std::make_pair(
+            index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev, n_factors)));
+      case ModelType::FFM:
+        model_weight.insert(std::make_pair(
+            index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev, n_factors, n_fields)));
     }
   }
   return model_weight[index];
@@ -69,7 +79,7 @@ float FtrlModel::compute_logit(const feat_vec &feats, bool update_model) {
     }
   }
 
-  if (model_type == "FM") {
+  if (model_type == ModelType::FM) {
     // store sum_vx for later update model
     if (update_model) {
       float sum_sqr, vx;  // NOLINT
@@ -103,7 +113,7 @@ float FtrlModel::compute_logit(const feat_vec &feats, bool update_model) {
     }
   }
 
-  if (model_type == "FFM") {
+  if (model_type == ModelType::FFM) {
     const size_t x_len = feats.size();
     for (int i = 0; i < x_len; i++) {
       for (int j = i + 1; j < x_len; j++) {
@@ -142,21 +152,21 @@ float FtrlModel::train(const feat_vec &feats, int label, float w_alpha, float w_
   params[feat_len] = get_or_init_bias();
 
   update_linear_weight(params, feat_len, w_alpha, w_beta, w_l1, w_l2);
-  if (model_type == "FM") {
+  if (model_type == ModelType::FM) {
     update_fm_weight(params, feats, n_factors, feat_len, w_alpha, w_beta, w_l1, w_l2);
   }
 
-  if (model_type == "FFM") {
+  if (model_type == ModelType::FFM) {
     update_ffm_weight(params, feats, n_factors, feat_len, w_alpha, w_beta, w_l1, w_l2);
   }
 
   const float p = compute_logit(feats, true);
   const float mult = label * (1 / (1 + std::exp(-p * label)) - 1);  // NOLINT
   update_linear_nz(params, feats, feat_len, w_alpha, mult);
-  if (model_type == "FM") {
+  if (model_type == ModelType::FM) {
     update_fm_nz(params, feats, feat_len, w_alpha, mult, n_factors, sum_vx);
   }
-  if (model_type == "FFM") {
+  if (model_type == ModelType::FFM) {
     update_ffm_nz(params, feats, feat_len, w_alpha, mult, n_factors);
   }
   return p;

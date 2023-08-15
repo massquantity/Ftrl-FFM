@@ -19,4 +19,10 @@ typedef uint64_t uint64;
 typedef std::tuple<int, int, float> feat;
 typedef std::vector<feat> feat_vec;
 
+enum class ModelType : uint8 {
+  LR = 0,
+  FM = 1,
+  FFM = 2
+};
+
 #endif  // FTRL_FFM_TYPES_H

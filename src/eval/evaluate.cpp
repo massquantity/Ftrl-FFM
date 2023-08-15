@@ -1,4 +1,5 @@
 #include "eval/evaluate.h"
+
 #include "eval/loss.h"
 
 namespace ftrl {
