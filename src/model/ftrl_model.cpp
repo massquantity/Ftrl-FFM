@@ -13,7 +13,7 @@
 
 namespace ftrl {
 
-FtrlModel::FtrlModel(float _mean, float _stddev, const std::string &_model_type)
+FtrlModel::FtrlModel(float _mean, float _stddev, std::string_view _model_type)
     : init_mean(_mean), init_stddev(_stddev) {
   if (_model_type == "LR") {
     model_type = ModelType::LR;
@@ -24,7 +24,7 @@ FtrlModel::FtrlModel(float _mean, float _stddev, const std::string &_model_type)
   }
 }
 
-FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, const std::string &_model_type)
+FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, std::string_view _model_type)
     : FtrlModel(_mean, _stddev, _model_type) {
   n_factors = _n_factors;  // NOLINT
   sum_vx.resize(n_factors);
@@ -34,7 +34,7 @@ FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, const std::stri
 }
 
 FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields,
-                     const std::string &_model_type)
+                     std::string_view _model_type)
     : FtrlModel(_mean, _stddev, _n_factors, _model_type) {
   n_fields = _n_fields;  // NOLINT
 }

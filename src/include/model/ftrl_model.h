@@ -14,10 +14,10 @@ namespace ftrl {
 
 class FtrlModel {
  public:
-  FtrlModel(float _mean, float _stddev, const std::string &_model_type);
-  FtrlModel(float _mean, float _stddev, int _n_factors, const std::string &_model_type);
+  FtrlModel(float _mean, float _stddev, std::string_view _model_type);
+  FtrlModel(float _mean, float _stddev, int _n_factors, std::string_view _model_type);
   FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields,
-            const std::string &_model_type);
+            std::string_view _model_type);
 
   std::shared_ptr<ftrl_model_unit> &get_or_init_weight(int index);
   std::shared_ptr<ftrl_model_unit> &get_or_init_bias();

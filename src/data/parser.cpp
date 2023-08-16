@@ -5,8 +5,8 @@
 
 namespace ftrl {
 
-static const constexpr char *SPLITTER = " ";
-static const constexpr char *INNER_SPLITTER = ":";
+static inline constexpr std::string_view SPLITTER = " ";
+static inline constexpr std::string_view INNER_SPLITTER = ":";
 
 void LibsvmParser::parse(const std::string &line, Sample &sample) {
   sample.x.clear();
