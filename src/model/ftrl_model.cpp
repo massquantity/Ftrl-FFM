@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "train/ftrl_trainer.h"
+#include "utils/utils.h"
 
 namespace ftrl {
 
@@ -164,13 +165,13 @@ float FtrlModel::train(const feat_vec &feats, int label, float w_alpha, float w_
   }
 
   const float p = compute_logit(feats, true);
-  const float mult = label * (1 / (1 + std::exp(-p * label)) - 1);  // NOLINT
-  update_linear_nz(params, feats, feat_len, w_alpha, mult);
+  const float tmp_grad = utils::sigmoid<float>(p) - static_cast<float>(label);
+  update_linear_nz(params, feats, feat_len, w_alpha, tmp_grad);
   if (model_type == ModelType::FM) {
-    update_fm_nz(params, feats, feat_len, w_alpha, mult, n_factors, sum_vx);
+    update_fm_nz(params, feats, feat_len, w_alpha, tmp_grad, n_factors, sum_vx);
   }
   if (model_type == ModelType::FFM) {
-    update_ffm_nz(params, feats, feat_len, w_alpha, mult, n_factors);
+    update_ffm_nz(params, feats, feat_len, w_alpha, tmp_grad, n_factors);
   }
   return p;
 }

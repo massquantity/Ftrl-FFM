@@ -107,7 +107,7 @@ struct config_options {  // NOLINT(altera-struct-pack-align)
   config_options()
       : init_mean(0.0),
         init_stddev(0.02),
-        w_alpha(0.1),
+        w_alpha(1e-4),
         w_beta(1.0),
         w_l1(0.1),
         w_l2(5.0),

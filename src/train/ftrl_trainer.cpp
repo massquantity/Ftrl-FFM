@@ -80,13 +80,13 @@ void update_ffm_weight(std::vector<std::shared_ptr<ftrl_model_unit>> &params,
 
 void update_linear_nz(std::vector<std::shared_ptr<ftrl_model_unit>> &params,
                       const std::vector<std::tuple<int, int, float>> &x, size_t feat_len,
-                      float w_alpha, float mult) {
+                      float w_alpha, float tmp_grad) {
   for (int i = 0; i <= feat_len; i++) {
     auto mu = params[i];
     const float xi = i < feat_len ? std::get<2>(x[i]) : 1.0f;
     float zi, ni;  // NOLINT
     std::shared_lock<std::shared_mutex> read_lock(mu->mtx);
-    const float w_gi = mult * xi;
+    const float w_gi = tmp_grad * xi;
     const float w_si = (sqrtf(mu->w_ni + w_gi * w_gi) - sqrtf(mu->w_ni)) / w_alpha;
     zi = mu->w_zi + w_gi - w_si * mu->wi;
     ni = mu->w_ni + w_gi * w_gi;
@@ -101,7 +101,7 @@ void update_linear_nz(std::vector<std::shared_ptr<ftrl_model_unit>> &params,
 
 void update_fm_nz(std::vector<std::shared_ptr<ftrl_model_unit>> &params,
                   const std::vector<std::tuple<int, int, float>> &x, size_t feat_len, float w_alpha,
-                  float mult, int n_factors, std::vector<float> &sum_vx) {
+                  float tmp_grad, int n_factors, std::vector<float> &sum_vx) {
   for (int i = 0; i < feat_len; i++) {
     auto mu = params[i];
     const float xi = std::get<2>(x[i]);
@@ -112,7 +112,7 @@ void update_fm_nz(std::vector<std::shared_ptr<ftrl_model_unit>> &params,
       const float v_nif = mu->v_ni[f];
       const float v_zif = mu->v_zi[f];
       const float s_vx = sum_vx[f];
-      const float v_gif = mult * (xi * s_vx - vif * xi * xi);
+      const float v_gif = tmp_grad * (xi * s_vx - vif * xi * xi);
       const float v_sif = (sqrtf(v_nif + v_gif * v_gif) - sqrtf(v_nif)) / w_alpha;
       zi[f] = v_zif + v_gif - v_sif * vif;
       ni[f] = v_nif + v_gif * v_gif;
@@ -130,14 +130,14 @@ void update_fm_nz(std::vector<std::shared_ptr<ftrl_model_unit>> &params,
 
 void update_ffm_nz(std::vector<std::shared_ptr<ftrl_model_unit>> &params,
                    const std::vector<std::tuple<int, int, float>> &x, size_t feat_len,
-                   float w_alpha, float mult, int n_factors) {
+                   float w_alpha, float tmp_grad, int n_factors) {
   for (int i = 0; i < feat_len; i++) {
     for (int j = i + 1; j < feat_len; j++) {
-      const int fi1 = std::get<0>(x[i]);
-      const int fi2 = std::get<0>(x[j]);
+      auto [field1, _feat1, x1] = x[i];
+      auto [field2, _feat2, x2] = x[j];
       auto mu1 = params[i];
       auto mu2 = params[j];
-      const float xi = std::get<2>(x[i]) * std::get<2>(x[j]);
+      const float xi = x1 * x2;
       std::vector<float> zi1(n_factors), ni1(n_factors), ni2(n_factors), zi2(n_factors);
       {
         // https://stackoverflow.com/questions/54641216/can-scoped-lock-lock-a-shared-mutex-in-read-mode
@@ -145,21 +145,21 @@ void update_ffm_nz(std::vector<std::shared_ptr<ftrl_model_unit>> &params,
         std::shared_lock<std::shared_mutex> read_lock2(mu2->mtx, std::defer_lock);
         const std::scoped_lock read_lock(read_lock1, read_lock2);
         for (int f = 0; f < n_factors; f++) {
-          const int index1 = fi2 * n_factors + f;
+          const int index1 = field2 * n_factors + f;
           const float vif1 = mu1->vi[index1];
           const float v_nif1 = mu1->v_ni[index1];
           const float v_zif1 = mu1->v_zi[index1];
-          const int index2 = fi1 * n_factors + f;
+          const int index2 = field1 * n_factors + f;
           const float vif2 = mu2->vi[index2];
           const float v_nif2 = mu2->v_ni[index2];
           const float v_zif2 = mu2->v_zi[index2];
 
-          const float v_gif1 = mult * vif2 * xi;
+          const float v_gif1 = tmp_grad * vif2 * xi;
           const float v_sif1 = (sqrtf(v_nif1 + v_gif1 * v_gif1) - sqrtf(v_nif1)) / w_alpha;
           zi1[f] = v_zif1 + v_gif1 - v_sif1 * vif1;
           ni1[f] = v_nif1 + v_gif1 * v_gif1;
 
-          const float v_gif2 = mult * vif1 * xi;
+          const float v_gif2 = tmp_grad * vif1 * xi;
           const float v_sif2 = (sqrtf(v_nif2 + v_gif2 * v_gif1) - sqrtf(v_nif2)) / w_alpha;
           zi2[f] = v_zif2 + v_gif2 - v_sif2 * vif2;
           ni2[f] = v_nif2 + v_gif2 * v_gif2;
@@ -172,10 +172,10 @@ void update_ffm_nz(std::vector<std::shared_ptr<ftrl_model_unit>> &params,
         // std::unique_lock<std::shared_mutex> write_lock2(mu2->mtx, std::defer_lock);
         // std::lock(write_lock1, write_lock2);
         for (int f = 0; f < n_factors; f++) {
-          const int index1 = fi2 * n_factors + f;
+          const int index1 = field2 * n_factors + f;
           mu1->v_zi[index1] = zi1[f];
           mu1->v_ni[index1] = ni1[f];
-          const int index2 = fi1 * n_factors + f;
+          const int index2 = field1 * n_factors + f;
           mu2->v_zi[index2] = zi2[f];
           mu2->v_ni[index2] = ni2[f];
         }

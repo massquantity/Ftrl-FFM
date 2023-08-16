@@ -22,15 +22,15 @@ void update_ffm_weight(std::vector<std::shared_ptr<ftrl_model_unit>>& params,
 
 void update_linear_nz(std::vector<std::shared_ptr<ftrl_model_unit>>& params,
                       const std::vector<std::tuple<int, int, float>>& x, size_t feat_len,
-                      float w_alpha, float mult);
+                      float w_alpha, float tmp_grad);
 
 void update_fm_nz(std::vector<std::shared_ptr<ftrl_model_unit>>& params,
                   const std::vector<std::tuple<int, int, float>>& x, size_t feat_len, float w_alpha,
-                  float mult, int n_factors, std::vector<float>& sum_vx);
+                  float tmp_grad, int n_factors, std::vector<float>& sum_vx);
 
 void update_ffm_nz(std::vector<std::shared_ptr<ftrl_model_unit>>& params,
                    const std::vector<std::tuple<int, int, float>>& x, size_t feat_len,
-                   float w_alpha, float mult, int n_factors);
+                   float w_alpha, float tmp_grad, int n_factors);
 
 }  // namespace ftrl
 
