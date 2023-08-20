@@ -3,21 +3,26 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "data/parser.h"
 #include "data/sample.h"
+#include "utils/types.h"
 
 namespace ftrl {
 
 class Reader {
  public:
   explicit Reader(const std::string &file_type);
-  void load_from_file(const std::string &file_name, int n_threads);
+  void load_from_file(std::string_view file_name, int n_threads);
   [[maybe_unused]] [[nodiscard]] size_t getSize() const { return dataSize; }
   size_t dataSize{0};
   std::vector<Sample> data;
   std::shared_ptr<Parser> parser;
+
+ private:
+  std::vector<int64> get_data_partition(std::string_view file_name, int n_threads);
 };
 
 }  // namespace ftrl
