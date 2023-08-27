@@ -66,13 +66,13 @@ void FtrlTask::eval_online() {
 void FtrlTask::train_offline() {
   for (int i = 1; i <= opt.epoch; i++) {
     auto train_start = timer::now();
-    const double train_loss = offline_model->one_epoch_pool(train_data->data, true);
+    const double train_loss = offline_model->one_epoch(train_data->data, true, true);
     const double train_time = utils::compute_time(train_start);
     printf("epoch %d train time: %.4lfs, train loss: %.4lf\n", i, train_time, train_loss);
 
     if (eval_data != nullptr) {
       auto eval_start = timer::now();
-      const double eval_loss = offline_model->one_epoch_pool(eval_data->data, false);
+      const double eval_loss = offline_model->one_epoch(eval_data->data, false, true);
       const double eval_time = utils::compute_time(eval_start);
       printf("epoch %d eval time: %.4lfs, eval loss: %.4lf\n", i, eval_time, eval_loss);
     }
@@ -81,7 +81,7 @@ void FtrlTask::train_offline() {
 
 void FtrlTask::eval_offline() {
   auto eval_start = timer::now();
-  const double eval_loss = offline_model->one_epoch_batch(eval_data->data, false);
+  const double eval_loss = offline_model->one_epoch(eval_data->data, false, false);
   const double eval_time = utils::compute_time(eval_start);
   printf("eval time: %.4lfs, eval loss: %.4lf\n", eval_time, eval_loss);
 }

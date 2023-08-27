@@ -25,7 +25,7 @@ void Evaluator::run_task(std::vector<std::string> &data_buffer, int t) {
   for (const auto &rawData : data_buffer) {
     Sample sample;
     parser->parse(rawData, sample);
-    const double pred = predict(sample.x);
+    const double pred = eval_model->predict(sample.x, false);
     tmp_loss += loss(sample.y, pred);
   }
   losses[t] += tmp_loss;
@@ -36,18 +36,12 @@ void Evaluator::load_trained_model(std::shared_ptr<FtrlModel> &train_model) {
   eval_model = train_model;
 }
 
-double Evaluator::predict(const feat_vec &feats) {
-  return eval_model->predict(feats, false);
-}
-
 double Evaluator::get_loss() {
   double total_loss = 0.0;
   uint64 total_num = 0;
   for (int i = 0; i < n_threads; i++) {
     total_loss += losses[i];
     total_num += nums[i];
-  }
-  for (int i = 0; i < n_threads; i++) {
     losses[i] = 0.0;
     nums[i] = 0;
   }

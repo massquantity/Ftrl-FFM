@@ -70,8 +70,8 @@ std::shared_ptr<ftrl_model_unit> &FtrlModel::get_or_init_bias() {
 }
 
 float FtrlModel::predict(const feat_vec &feats, bool sigmoid) {
-  const float result = compute_logit(feats, false);
-  return sigmoid ? (1.0f / (1.0f + std::exp(-result))) : result;
+  const float logit = compute_logit(feats, false);
+  return sigmoid ? (1.0f / (1.0f + std::exp(-logit))) : logit;
 }
 
 float FtrlModel::compute_logit(const feat_vec &feats, bool update_model) {
@@ -164,8 +164,8 @@ float FtrlModel::train(const feat_vec &feats, int label, float w_alpha, float w_
     update_ffm_weight(params, feats, n_factors, feat_len, w_alpha, w_beta, w_l1, w_l2);
   }
 
-  const float p = compute_logit(feats, true);
-  const float tmp_grad = utils::sigmoid<float>(p) - static_cast<float>(label);
+  const float logit = compute_logit(feats, true);
+  const float tmp_grad = utils::sigmoid<float>(logit) - static_cast<float>(label);
   update_linear_nz(params, feats, feat_len, w_alpha, tmp_grad);
   if (model_type == ModelType::FM) {
     update_fm_nz(params, feats, feat_len, w_alpha, tmp_grad, n_factors, sum_vx);
@@ -173,7 +173,7 @@ float FtrlModel::train(const feat_vec &feats, int label, float w_alpha, float w_
   if (model_type == ModelType::FFM) {
     update_ffm_nz(params, feats, feat_len, w_alpha, tmp_grad, n_factors);
   }
-  return p;
+  return logit;
 }
 
 void FtrlModel::output_model(std::ofstream &ofs) {

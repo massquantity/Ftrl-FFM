@@ -19,18 +19,17 @@ class Evaluator : public PcTask {
  public:
   explicit Evaluator(const config_options &opt);
   void load_trained_model(std::shared_ptr<FtrlModel> &train_model);
-  double predict(const feat_vec &feats);
   double get_loss();
   ~Evaluator() override;
 
  private:
-  std::shared_ptr<FtrlModel> eval_model;
-  int n_threads;
-  std::shared_ptr<Parser> parser;
   void run_task(std::vector<std::string> &data_buffer, int t) override;
+
+  std::shared_ptr<FtrlModel> eval_model;
+  std::shared_ptr<Parser> parser;
   std::unique_ptr<double[]> losses;
   std::unique_ptr<uint64[]> nums;
-  // std::mutex eval_mtx;
+  int n_threads;
 };
 
 }  // namespace ftrl

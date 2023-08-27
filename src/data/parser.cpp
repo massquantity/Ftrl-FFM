@@ -13,10 +13,10 @@ void LibsvmParser::parse(const std::string &line, Sample &sample) {
   std::string::size_type begin = line.find_first_not_of(SPLITTER, 0);
   std::string::size_type end = line.find_first_of(SPLITTER, begin);
   const int label = std::stoi(line.substr(begin, end - begin));
-  sample.y = label > 0 ? 1 : -1;
+  sample.y = label > 0 ? 1 : 0;
 
-  const std::string::size_type lineLength = line.size();
-  while (end < lineLength) {
+  const std::string::size_type line_length = line.size();
+  while (end < line_length) {
     const int field = 0;  // dummy field
     begin = line.find_first_not_of(SPLITTER, end);
     if (begin == std::string::npos) break;
@@ -28,7 +28,7 @@ void LibsvmParser::parse(const std::string &line, Sample &sample) {
     const int feat = stoi(line.substr(begin, end - begin));
 
     begin = end + 1;
-    if (begin >= lineLength) {
+    if (begin >= line_length) {
       std::cout << "wrong input: " << line << std::endl;
       throw std::out_of_range(line);
     }
@@ -45,7 +45,7 @@ void LibsvmParser::parse(const std::string &line, Sample &sample) {
   const std::string::size_type begin = line.find_first_not_of(SPLITTER, 0);
   const std::string::size_type end = line.find_first_of(SPLITTER, begin);
   const int label = std::stoi(line.substr(begin, end - begin));
-  sample.y = label > 0 ? 1 : -1;
+  sample.y = label > 0 ? 1 : 0;
 
   std::sregex_iterator it{line.begin(), line.end(), reg};
   const std::sregex_iterator end_it;
@@ -64,7 +64,7 @@ void FFMParser::parse(const std::string &line, Sample &sample) {
   std::string::size_type begin = line.find_first_not_of(SPLITTER, 0);
   std::string::size_type end = line.find_first_of(SPLITTER, begin);
   const int label = std::stoi(line.substr(begin, end - begin));
-  sample.y = label > 0 ? 1 : -1;
+  sample.y = label > 0 ? 1 : 0;
 
   const std::string::size_type lineLength = line.size();
   while (end < lineLength) {
@@ -107,7 +107,7 @@ void FFMParser::parse(const std::string &line, Sample &sample) {
   const std::string::size_type begin = line.find_first_not_of(SPLITTER, 0);
   const std::string::size_type end = line.find_first_of(SPLITTER, begin);
   const int label = atoi(line.substr(begin, end - begin).c_str());  // NOLINT
-  sample.y = label > 0 ? 1 : -1;
+  sample.y = label > 0 ? 1 : 0;
 
   // NOLINTBEGIN
   char *buffer = new char[line.size() + 1];
