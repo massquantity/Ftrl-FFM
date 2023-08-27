@@ -67,17 +67,16 @@ static std::string detect_file_type(const std::string &file_path) {
   std::string line;
   std::getline(ifs, line);
   ifs.close();
+
   std::vector<std::string> split_line;
   split_string(line, " ", split_line);
-  int count = 0;
-  for (const char c : split_line[1]) {
-    if (c == ':') {
-      count++;
-    }
-  }
-  if (count == 1) {
+  const std::string_view example_feature = split_line[1];
+  const int64 colon_count = std::count_if(example_feature.cbegin(), example_feature.cend(),
+                                          [](const char c) { return c == ':'; });
+
+  if (colon_count == 1) {
     return "libsvm";
-  } else if (count == 2) {
+  } else if (colon_count == 2) {
     return "libffm";
   } else {
     std::cerr << "unknown file format..." << std::endl;

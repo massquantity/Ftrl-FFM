@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
+#include "concurrent/pc_task.h"
 #include "data/parser.h"
 #include "model/ftrl_model.h"
-#include "threading/pc_task.h"
 #include "utils/cmd_option.h"
 #include "utils/types.h"
 

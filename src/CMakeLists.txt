@@ -1,19 +1,19 @@
+add_subdirectory(concurrent)
 add_subdirectory(data)
 add_subdirectory(eval)
 add_subdirectory(model)
 add_subdirectory(task)
-add_subdirectory(threading)
 add_subdirectory(train)
 
 add_executable(main main.cpp)
 
 set(LINK_LIBS
+        concurrent
+        data
         eval
         model
-        train
-        data
         task
-        threading
+        train
 )
 
 target_link_libraries(main PRIVATE ${LINK_LIBS})

@@ -41,7 +41,7 @@ struct utils {
     return exact_time * numerator / denominator;
   };
 
-  static decltype(auto) compute_time(clock_time &start_time) {
+  static decltype(auto) compute_time(const clock_time &start_time) {
     // std::this_thread::sleep_for(std::chrono::microseconds(1020023));
     auto end_time = std::chrono::steady_clock::now();
     auto nano_time =

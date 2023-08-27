@@ -6,7 +6,7 @@
 #include <numeric>
 #include <thread>
 
-#include "threading/asynchronous.h"
+#include "concurrent/asynchronous.h"
 #include "utils/utils.h"
 
 namespace ftrl {

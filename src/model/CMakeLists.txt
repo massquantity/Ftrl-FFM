@@ -10,9 +10,9 @@ add_library(${PROJECT_NAME} STATIC ${SRC})
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
+        concurrent
         data
         eval
-        threading
         train
 )
 

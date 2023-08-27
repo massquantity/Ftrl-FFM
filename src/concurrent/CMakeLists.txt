@@ -1,4 +1,4 @@
-project(threading)
+project(concurrent)
 
 add_library(${PROJECT_NAME} STATIC pc_task.cpp)
 
