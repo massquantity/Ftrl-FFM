@@ -1,6 +1,6 @@
 #include "model/ftrl_model.h"
 
-#include <cmath>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -9,187 +9,101 @@
 #include <tuple>
 #include <vector>
 
-#include "train/ftrl_trainer.h"
 #include "utils/utils.h"
 
 namespace ftrl {
 
-FtrlModel::FtrlModel(float _mean, float _stddev, std::string_view _model_type)
-    : init_mean(_mean), init_stddev(_stddev) {
-  if (_model_type == "LR") {
+FtrlModel::FtrlModel(const config_options &opt)
+    : n_feats(opt.n_feats),
+      w_alpha(opt.w_alpha),
+      w_beta(opt.w_beta),
+      w_l1(opt.w_l1),
+      w_l2(opt.w_l2),
+      bias(0.0),
+      bias_n(0.0),
+      bias_z(0.0) {
+  if (opt.model_type == "LR") {
     model_type = ModelType::LR;
-  } else if (_model_type == "FM") {
+  } else if (opt.model_type == "FM") {
     model_type = ModelType::FM;
-  } else if (_model_type == "FFM") {
+  } else if (opt.model_type == "FFM") {
     model_type = ModelType::FFM;
   }
+  lin_w = std::move(utils::init_weights(n_feats, opt.init_mean, opt.init_stddev));
+  lin_w_n.resize(n_feats);
+  std::fill(lin_w_n.begin(), lin_w_n.end(), 0.0);
+  lin_w_z.resize(n_feats);
+  std::fill(lin_w_z.begin(), lin_w_z.end(), 0.0);
+  lin_w_mutex = std::move(std::vector<std::mutex>(n_feats));
 }
 
-FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, std::string_view _model_type)
-    : FtrlModel(_mean, _stddev, _model_type) {
-  n_factors = _n_factors;  // NOLINT
-  sum_vx.resize(n_factors);
-  for (int i = 0; i < n_factors; i++) {
-    sum_vx[i] = 0.0;
+void FtrlModel::remove_out_range(feat_vec &feats) {
+  auto new_end = std::remove_if(feats.begin(), feats.end(), [&](auto &f) {
+    const int i = std::get<1>(f);
+    return i < 0 || i >= n_feats;
+  });
+  feats.erase(new_end, feats.end());
+}
+
+float FtrlModel::compute_linear_logit(const feat_vec &features) {
+  return std::accumulate(features.cbegin(), features.cend(), bias,
+                         [&](float acc, const std::tuple<int, int, float> &feat) {
+                           const auto &[_, i, x] = feat;
+                           return acc + lin_w[i] * x;
+                         });
+}
+
+void FtrlModel::update_linear_w(const feat_vec &features) {
+  for (const auto &feat : features) {
+    const int i = std::get<1>(feat);
+    std::unique_lock lock(lin_w_mutex[i]);
+    lin_w[i] = maybe_zero_weight(lin_w_n[i], lin_w_z[i]);
+    lock.unlock();
   }
 }
 
-FtrlModel::FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields,
-                     std::string_view _model_type)
-    : FtrlModel(_mean, _stddev, _n_factors, _model_type) {
-  n_fields = _n_fields;  // NOLINT
+void FtrlModel::update_bias() {
+  const std::scoped_lock lock(bias_mutex);
+  bias = maybe_zero_weight(bias_n, bias_z);
 }
 
-std::shared_ptr<ftrl_model_unit> &FtrlModel::get_or_init_weight(int index) {
-  if (auto iter = model_weight.find(index); iter == model_weight.end()) {
-    std::scoped_lock<std::mutex> lock(weight_mutex);  // NOLINT
-    switch (model_type) {
-      case ModelType::LR:
-        model_weight.insert(
-            std::make_pair(index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev)));
-        break;
-      case ModelType::FM:
-        model_weight.insert(std::make_pair(
-            index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev, n_factors)));
-        break;
-      case ModelType::FFM:
-        model_weight.insert(std::make_pair(
-            index, std::make_shared<ftrl_model_unit>(init_mean, init_stddev, n_factors, n_fields)));
-        break;
-    }
+void FtrlModel::update_linear_nz(const feat_vec &features, float tmp_grad) {
+  for (const auto &[_, i, x] : features) {
+    std::unique_lock lock(lin_w_mutex[i]);
+    const float wi = lin_w[i];
+    const float ni = lin_w_n[i];
+    const float gi = tmp_grad * x;
+    const float si = (sqrtf(ni + gi * gi) - sqrtf(ni)) / w_alpha;
+    lin_w_z[i] += gi - si * wi;
+    lin_w_n[i] += gi * gi;
+    lock.unlock();
   }
-  return model_weight[index];
 }
 
-std::shared_ptr<ftrl_model_unit> &FtrlModel::get_or_init_bias() {
-  if (model_bias == nullptr) {
-    std::scoped_lock<std::mutex> lock(bias_mutex);  // NOLINT
-    model_bias = std::make_shared<ftrl_model_unit>();
-  }
-  return model_bias;
-}
-
-float FtrlModel::predict(const feat_vec &feats, bool sigmoid) {
-  const float logit = compute_logit(feats, false);
-  return sigmoid ? (1.0f / (1.0f + std::exp(-logit))) : logit;
-}
-
-float FtrlModel::compute_logit(const feat_vec &feats, bool update_model) {
-  double result = model_bias->wi;
-  for (const auto &feat : feats) {
-    auto iter = model_weight.find(std::get<1>(feat));
-    if (iter != model_weight.end()) {
-      result += (iter->second->wi * std::get<2>(feat));
-    }
-  }
-
-  if (model_type == ModelType::FM) {
-    // store sum_vx for later update model
-    if (update_model) {
-      float sum_sqr, vx;  // NOLINT
-      for (int f = 0; f < n_factors; f++) {
-        sum_vx[f] = 0.0;
-        sum_sqr = 0.0;
-        for (const auto &feat : feats) {
-          auto iter = model_weight.find(std::get<1>(feat));
-          if (iter != model_weight.end()) {
-            vx = iter->second->vi[f] * std::get<2>(feat);
-            sum_vx[f] += vx;
-            sum_sqr += vx * vx;
-          }
-        }
-        result += 0.5 * (sum_vx[f] * sum_vx[f] - sum_sqr);
-      }
-    } else {
-      float s_vx, sum_sqr, vx;  // NOLINT
-      for (int f = 0; f < n_factors; f++) {
-        s_vx = sum_sqr = 0.0;
-        for (const auto &feat : feats) {
-          auto iter = model_weight.find(std::get<1>(feat));
-          if (iter != model_weight.end()) {
-            vx = iter->second->vi[f] * std::get<2>(feat);
-            s_vx += vx;
-            sum_sqr += vx * vx;
-          }
-        }
-        result += 0.5 * (s_vx * s_vx - sum_sqr);
-      }
-    }
-  }
-
-  if (model_type == ModelType::FFM) {
-    const size_t x_len = feats.size();
-    for (int i = 0; i < x_len; i++) {
-      for (int j = i + 1; j < x_len; j++) {
-        const int fi1 = std::get<0>(feats[i]);
-        const int fi2 = std::get<0>(feats[j]);
-        const int index1 = std::get<1>(feats[i]);
-        const int index2 = std::get<1>(feats[j]);
-        const float x1 = std::get<2>(feats[i]);
-        const float x2 = std::get<2>(feats[j]);
-        float dot = 0.0;
-        auto iter1 = model_weight.find(index1);
-        auto iter2 = model_weight.find(index2);
-        float val1, val2;  // NOLINT
-        if (iter1 != model_weight.end() && iter2 != model_weight.end()) {
-          for (int f = 0; f < n_factors; f++) {
-            val1 = iter1->second->vi[fi2 * n_factors + f];
-            val2 = iter2->second->vi[fi1 * n_factors + f];
-            dot += val1 * val2;
-          }
-          result += dot * x1 * x2;
-        }
-      }
-    }
-  }
-  return static_cast<float>(result);
-}
-
-float FtrlModel::train(const feat_vec &feats, int label, float w_alpha, float w_beta, float w_l1,
-                       float w_l2) {
-  const size_t feat_len = feats.size();
-  std::vector<std::shared_ptr<ftrl_model_unit>> params(feat_len + 1);
-  for (int i = 0; i < feat_len; i++) {
-    const int index = std::get<1>(feats[i]);
-    params[i] = get_or_init_weight(index);
-  }
-  params[feat_len] = get_or_init_bias();
-
-  update_linear_weight(params, feat_len, w_alpha, w_beta, w_l1, w_l2);
-  if (model_type == ModelType::FM) {
-    update_fm_weight(params, feats, n_factors, feat_len, w_alpha, w_beta, w_l1, w_l2);
-  }
-
-  if (model_type == ModelType::FFM) {
-    update_ffm_weight(params, feats, n_factors, feat_len, w_alpha, w_beta, w_l1, w_l2);
-  }
-
-  const float logit = compute_logit(feats, true);
-  const float tmp_grad = utils::sigmoid<float>(logit) - static_cast<float>(label);
-  update_linear_nz(params, feats, feat_len, w_alpha, tmp_grad);
-  if (model_type == ModelType::FM) {
-    update_fm_nz(params, feats, feat_len, w_alpha, tmp_grad, n_factors, sum_vx);
-  }
-  if (model_type == ModelType::FFM) {
-    update_ffm_nz(params, feats, feat_len, w_alpha, tmp_grad, n_factors);
-  }
-  return logit;
+void FtrlModel::update_bias_nz(float tmp_grad) {
+  const std::scoped_lock lock(bias_mutex);
+  const float gi = tmp_grad;
+  const float si = (sqrtf(bias_n + gi * gi) - sqrtf(bias_n)) / w_alpha;
+  bias_z += gi - si * bias;
+  bias_n += gi * gi;
 }
 
 void FtrlModel::output_model(std::ofstream &ofs) {
   std::ostringstream ost;
-  ost << "bias " << *model_bias << std::endl;
-  for (auto &elem : model_weight) {
-    ost << elem.first << " " << *(elem.second) << std::endl;
+  ost << "bias " << bias << std::endl;
+  int i = 0;
+  for (auto &w : lin_w) {
+    ost << i << " " << w << std::endl;
+    i++;
   }
   ofs << ost.str();
 }
 
 [[maybe_unused]] void FtrlModel::debug_print_model() {
-  std::cout << "bias " << *model_bias << std::endl;
-  for (auto &iter : model_weight) {
-    std::cout << iter.first << " " << *(iter.second) << std::endl;
-  }
+  // std::cout << "bias " << *model_bias << std::endl;
+  // for (auto &iter : model_weight) {
+  //  std::cout << iter.first << " " << *(iter.second) << std::endl;
+  // }
 }
 
 bool FtrlModel::load_model(std::ifstream &ifs) {

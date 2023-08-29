@@ -1,48 +1,56 @@
 #ifndef FTRL_FFM_FTRL_MODEL_H
 #define FTRL_FFM_FTRL_MODEL_H
 
-#include <memory>
+#include <cmath>
 #include <mutex>
-#include <string>
-#include <unordered_map>
 #include <vector>
 
-#include "model/ftrl_unit.h"
+#include "utils/cmd_option.h"
 #include "utils/types.h"
+#include "utils/utils.h"
 
 namespace ftrl {
 
 class FtrlModel {
  public:
-  FtrlModel(float _mean, float _stddev, std::string_view _model_type);
-  FtrlModel(float _mean, float _stddev, int _n_factors, std::string_view _model_type);
-  FtrlModel(float _mean, float _stddev, int _n_factors, int _n_fields,
-            std::string_view _model_type);
+  explicit FtrlModel(const config_options &opt);
+  virtual ~FtrlModel() = default;
+  virtual float train(feat_vec &features, int label) = 0;
+  virtual float predict(feat_vec &features, bool output_prob) = 0;
 
-  std::shared_ptr<ftrl_model_unit> &get_or_init_weight(int index);
-  std::shared_ptr<ftrl_model_unit> &get_or_init_bias();
+  float compute_linear_logit(const feat_vec &features);
+  void update_linear_w(const feat_vec &features);
+  void update_bias();
+  void update_linear_nz(const feat_vec &features, float tmp_grad);
+  void update_bias_nz(float tmp_grad);
+  virtual void remove_out_range(feat_vec &feats);
 
-  float predict(const feat_vec &feats, bool sigmoid);
-
-  float compute_logit(const feat_vec &feats, bool update_model);
-
-  float train(const feat_vec &feats, int label, float w_alpha, float w_beta, float w_l1,
-              float w_l2);
+  template <class T>
+  inline T maybe_zero_weight(T n, T z) {
+    return std::fabs(z) <= w_l1
+               ? 0.0
+               : -1.0 * (z - utils::sgn(z) * w_l1) / (w_l2 + (w_beta + std::sqrt(n)) / w_alpha);
+  }
 
   void output_model(std::ofstream &ofs);
   [[maybe_unused]] void debug_print_model();
   bool load_model(std::ifstream &ifs);
 
- private:
   ModelType model_type;
-  int n_factors{1};
-  int n_fields{1};
-  float init_mean;
-  float init_stddev;
-  std::vector<float> sum_vx;
-  std::shared_ptr<ftrl_model_unit> model_bias;
-  std::unordered_map<int, std::shared_ptr<ftrl_model_unit>> model_weight;
-  std::mutex weight_mutex;
+
+ protected:
+  int n_feats;
+  float w_alpha;
+  float w_beta;
+  float w_l1;
+  float w_l2;
+  float bias;
+  float bias_n;
+  float bias_z;
+  std::vector<float> lin_w;
+  std::vector<float> lin_w_n;
+  std::vector<float> lin_w_z;
+  std::vector<std::mutex> lin_w_mutex;
   std::mutex bias_mutex;
 };
 

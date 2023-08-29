@@ -2,7 +2,6 @@
 #define FTRL_FFM_TYPES_H
 
 #include <cstdint>
-#include <string>
 #include <tuple>
 #include <vector>
 

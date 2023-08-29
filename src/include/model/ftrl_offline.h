@@ -24,7 +24,6 @@ class FtrlOffline {
   std::shared_ptr<FtrlModel> model_ptr;
 
  private:
-  float w_alpha, w_beta, w_l1, w_l2;
   int n_threads;
   std::shared_ptr<ThreadPool> thread_pool;
 };

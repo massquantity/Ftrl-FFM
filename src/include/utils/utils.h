@@ -1,10 +1,12 @@
 #ifndef FTRL_FFM_UTILS_H
 #define FTRL_FFM_UTILS_H
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <random>
 #include <utility>
+#include <vector>
 
 #include "utils/types.h"
 
@@ -30,6 +32,31 @@ struct utils {
     std::mt19937 gen(rd());
     std::normal_distribution<> dist{mean, stddev};
     return dist(gen);
+  }
+
+  template <class T>
+  static std::vector<T> init_weights(std::size_t num, T mean, T stddev) {
+    std::vector<T> weights(num);
+    std::generate(weights.begin(), weights.end(), [&] { return gaussian(mean, stddev); });
+    return weights;
+  }
+
+  template <class T>
+  static decltype(auto) init_weights(std::size_t num, int n_factors, T mean, T stddev) {
+    std::vector<std::vector<T>> weights(num);
+    for (int i = 0; i < num; i++) {
+      std::vector<T> v(n_factors);
+      std::generate(v.begin(), v.end(), [&] { return gaussian(mean, stddev); });
+      weights[i] = std::move(v);
+    }
+    return weights;
+  }
+
+  template <class T>
+  static decltype(auto) init_weights(std::size_t num, int n_fields, int n_factors, T mean,
+                                     T stddev) {
+    const int v_size = n_factors * n_fields;
+    return init_weights(num, v_size, mean, stddev);
   }
 
   using clock_time = std::chrono::time_point<std::chrono::steady_clock>;

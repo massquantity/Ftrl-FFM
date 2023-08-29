@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "utils/types.h"
+
 // todo: change options
 static const constexpr char *cmd_help =
     "\nUsage: ./lr_train [<options>]   OR   cat sample | ./lr_train [<options>]"
@@ -98,8 +100,9 @@ struct config_options {  // NOLINT(altera-struct-pack-align)
   float w_l2;
   int thread_num;
   int epoch;
-  int n_factors;
   int n_fields;
+  int n_feats;
+  int n_factors;
   bool cmd;
   bool online;
 
@@ -113,8 +116,9 @@ struct config_options {  // NOLINT(altera-struct-pack-align)
         thread_num(1),
         epoch(1),
         cmd(false),
+        n_fields(8),
+        n_feats(10000),
         n_factors(16),
-        n_fields(0),
         model_type("FFM"),
         online(true) {}
 
@@ -134,6 +138,8 @@ struct config_options {  // NOLINT(altera-struct-pack-align)
         n_factors = stoi(args[i + 1]);
       } else if (args[i] == "-n_fields") {
         n_fields = stoi(args[i + 1]);
+      } else if (args[i] == "-n_feats") {
+        n_feats = stoi(args[i + 1]);
       } else if (args[i] == "-n_factors") {
         n_factors = stoi(args[i + 1]);
       } else if (args[i] == "-train_data") {

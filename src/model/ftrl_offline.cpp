@@ -1,23 +1,19 @@
 #include "model/ftrl_offline.h"
 
 #include "eval/loss.h"
+#include "model/ffm.h"
+#include "model/fm.h"
+#include "model/lr.h"
 
 namespace ftrl {
 
-FtrlOffline::FtrlOffline(const config_options &opt)
-    : w_alpha(opt.w_alpha),
-      w_beta(opt.w_beta),
-      w_l1(opt.w_l1),
-      w_l2(opt.w_l2),
-      n_threads(opt.thread_num) {
+FtrlOffline::FtrlOffline(const config_options &opt) : n_threads(opt.thread_num) {
   if (opt.model_type == "LR") {
-    model_ptr = std::make_shared<FtrlModel>(opt.init_mean, opt.init_stddev, opt.model_type);
+    model_ptr = std::make_shared<LR>(opt);
   } else if (opt.model_type == "FM") {
-    model_ptr =
-        std::make_shared<FtrlModel>(opt.init_mean, opt.init_stddev, opt.n_factors, opt.model_type);
+    model_ptr = std::make_shared<FM>(opt);
   } else if (opt.model_type == "FFM") {
-    model_ptr = std::make_shared<FtrlModel>(opt.init_mean, opt.init_stddev, opt.n_factors,
-                                            opt.n_fields, opt.model_type);
+    model_ptr = std::make_shared<FFM>(opt);
   } else {
     std::cout << "Invalid model_type: " << opt.model_type;
     std::cout << ", expect `LR`, `FM` or `FFM`." << std::endl;
@@ -41,9 +37,9 @@ double FtrlOffline::one_epoch(std::vector<Sample> &samples, bool train, bool use
   auto one_thread = [&](size_t idx, size_t start, size_t end) {
     double tmp_loss = 0.0;
     for (auto i = start; i < end; i++) {
-      const Sample &sample = samples[indices[i]];
-      auto logit = train ? model_ptr->train(sample.x, sample.y, w_alpha, w_beta, w_l1, w_l2)
-                         : model_ptr->predict(sample.x, false);
+      Sample &sample = samples[indices[i]];
+      auto logit =
+          train ? model_ptr->train(sample.x, sample.y) : model_ptr->predict(sample.x, false);
       tmp_loss += loss(sample.y, logit);
     }
     losses[idx] = tmp_loss;

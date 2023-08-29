@@ -1,24 +1,20 @@
 #include "model/ftrl_online.h"
 
 #include "eval/loss.h"
+#include "model/ffm.h"
+#include "model/fm.h"
+#include "model/lr.h"
 
 namespace ftrl {
 
 FtrlOnline::FtrlOnline(const config_options &opt)
-    : PcTask(opt.thread_num, opt.cmd),
-      w_alpha(opt.w_alpha),
-      w_beta(opt.w_beta),
-      w_l1(opt.w_l1),
-      w_l2(opt.w_l2),
-      n_threads(opt.thread_num) {
+    : PcTask(opt.thread_num, opt.cmd), n_threads(opt.thread_num) {
   if (opt.model_type == "LR") {
-    model_ptr = std::make_shared<FtrlModel>(opt.init_mean, opt.init_stddev, opt.model_type);
+    model_ptr = std::make_shared<LR>(opt);
   } else if (opt.model_type == "FM") {
-    model_ptr =
-        std::make_shared<FtrlModel>(opt.init_mean, opt.init_stddev, opt.n_factors, opt.model_type);
+    model_ptr = std::make_shared<FM>(opt);
   } else if (opt.model_type == "FFM") {
-    model_ptr = std::make_shared<FtrlModel>(opt.init_mean, opt.init_stddev, opt.n_factors,
-                                            opt.n_fields, opt.model_type);
+    model_ptr = std::make_shared<FFM>(opt);
   } else {
     std::cout << "Invalid model_type: " << opt.model_type;
     std::cout << ", expect `LR`, `FM` or `FFM`." << std::endl;
@@ -39,7 +35,7 @@ void FtrlOnline::run_task(std::vector<std::string> &data_buffer, int t) {
   for (const auto &rawData : data_buffer) {
     Sample sample;
     parser->parse(rawData, sample);
-    auto logit = model_ptr->train(sample.x, sample.y, w_alpha, w_beta, w_l1, w_l2);
+    auto logit = model_ptr->train(sample.x, sample.y);
     tmp_loss += loss(sample.y, logit);
   }
   losses[t] += tmp_loss;
