@@ -3,7 +3,6 @@ add_subdirectory(data)
 add_subdirectory(eval)
 add_subdirectory(model)
 add_subdirectory(task)
-add_subdirectory(train)
 
 add_executable(main main.cpp)
 
@@ -13,7 +12,6 @@ set(LINK_LIBS
         eval
         model
         task
-        train
 )
 
 target_link_libraries(main PRIVATE ${LINK_LIBS})
