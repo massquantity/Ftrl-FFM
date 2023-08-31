@@ -25,7 +25,7 @@ class FtrlModel {
   void update_bias_nz(float tmp_grad);
   virtual void remove_out_range(feat_vec &feats);
 
-  template <class T>
+  template <typename T>
   inline T maybe_zero_weight(T n, T z) {
     return std::fabs(z) <= w_l1
                ? 0.0

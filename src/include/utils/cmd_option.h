@@ -7,12 +7,13 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "utils/types.h"
 
 // todo: change options
-static const constexpr char *cmd_help =
+static const constexpr std::string_view cmd_help =
     "\nUsage: ./lr_train [<options>]   OR   cat sample | ./lr_train [<options>]"
     "\n"
     "\n"
@@ -135,33 +136,33 @@ struct config_options {  // NOLINT(altera-struct-pack-align)
       } else if (args[i] == "-online") {
         online = assign_bool(args[i + 1]);
       } else if (args[i] == "-dim") {
-        n_factors = stoi(args[i + 1]);
+        n_factors = std::stoi(args[i + 1]);
       } else if (args[i] == "-n_fields") {
-        n_fields = stoi(args[i + 1]);
+        n_fields = std::stoi(args[i + 1]);
       } else if (args[i] == "-n_feats") {
-        n_feats = stoi(args[i + 1]);
+        n_feats = std::stoi(args[i + 1]);
       } else if (args[i] == "-n_factors") {
-        n_factors = stoi(args[i + 1]);
+        n_factors = std::stoi(args[i + 1]);
       } else if (args[i] == "-train_data") {
         train_path = args[i + 1];
       } else if (args[i] == "-eval_data") {
         eval_path = args[i + 1];
       } else if (args[i] == "-init_mean") {
-        init_mean = stof(args[i + 1]);
+        init_mean = std::stof(args[i + 1]);
       } else if (args[i] == "-init_stddev") {
-        init_stddev = stof(args[i + 1]);
+        init_stddev = std::stof(args[i + 1]);
       } else if (args[i] == "-w_alpha") {
-        w_alpha = stof(args[i + 1]);
+        w_alpha = std::stof(args[i + 1]);
       } else if (args[i] == "-w_beta") {
-        w_beta = stof(args[i + 1]);
+        w_beta = std::stof(args[i + 1]);
       } else if (args[i] == "-w_l1") {
-        w_l1 = stof(args[i + 1]);
+        w_l1 = std::stof(args[i + 1]);
       } else if (args[i] == "-w_l2") {
-        w_l2 = stof(args[i + 1]);
+        w_l2 = std::stof(args[i + 1]);
       } else if (args[i] == "-n_threads") {
-        thread_num = stoi(args[i + 1]);
+        thread_num = std::stoi(args[i + 1]);
       } else if (args[i] == "-n_epochs") {
-        epoch = stoi(args[i + 1]);
+        epoch = std::stoi(args[i + 1]);
       } else if (args[i] == "-cmd") {
         cmd = assign_bool(args[i + 1]);
       } else {
