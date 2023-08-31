@@ -1,6 +1,6 @@
 project(task)
 
-add_library(${PROJECT_NAME} STATIC ftrl_task.cpp)
+add_library(${PROJECT_NAME} STATIC ftrl_online.cpp ftrl_offline.cpp)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
