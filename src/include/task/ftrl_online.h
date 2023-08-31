@@ -8,8 +8,8 @@
 
 #include "concurrent/pc_task.h"
 #include "data/parser.h"
+#include "eval/evaluate.h"
 #include "model/ftrl_model.h"
-#include "utils/cmd_option.h"
 #include "utils/types.h"
 
 namespace ftrl {
@@ -17,17 +17,21 @@ namespace ftrl {
 class FtrlOnline : public PcTask {
  public:
   explicit FtrlOnline(const config_options &opt);
+  void train();
+  void evaluate(int epoch = 0);
   void run_task(std::vector<std::string> &data_buffer, int t) override;
   double get_loss();
   [[maybe_unused]] bool load_model(std::ifstream &ifs);
   [[maybe_unused]] void output_model(std::ofstream &ofs);
+
   std::shared_ptr<FtrlModel> model_ptr;
+  std::unique_ptr<Evaluator> evaluator;
 
  private:
-  int n_threads;
+  int n_epochs;
   std::vector<double> losses;
   std::vector<uint64> nums;
-  std::shared_ptr<Parser> parser;
+  std::unique_ptr<Parser> parser;
 };
 
 }  // namespace ftrl

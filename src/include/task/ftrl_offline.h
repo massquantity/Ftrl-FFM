@@ -2,15 +2,12 @@
 #define FTRL_FFM_FTRL_OFFLINE_H
 
 #include <algorithm>
-#include <cassert>
 #include <memory>
 #include <numeric>
-#include <random>
-#include <thread>
 #include <vector>
 
 #include "concurrent/thread_pool.h"
-#include "data/parser.h"
+#include "data/reader.h"
 #include "data/sample.h"
 #include "model/ftrl_model.h"
 #include "utils/cmd_option.h"
@@ -20,12 +17,18 @@ namespace ftrl {
 class FtrlOffline {
  public:
   explicit FtrlOffline(const config_options &opt);
+  void train();
+  void evaluate(int epoch = 0);
   double one_epoch(std::vector<Sample> &samples, bool train, bool use_pool);
-  std::shared_ptr<FtrlModel> model_ptr;
+
+  std::unique_ptr<FtrlModel> model_ptr;
 
  private:
+  int n_epochs;
   int n_threads;
-  std::shared_ptr<ThreadPool> thread_pool;
+  std::unique_ptr<Reader> train_data_loader;
+  std::unique_ptr<Reader> eval_data_loader;
+  std::unique_ptr<ThreadPool> thread_pool;
 };
 
 }  // namespace ftrl

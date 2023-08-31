@@ -1,4 +1,4 @@
-#include "model/ftrl_online.h"
+#include "task/ftrl_online.h"
 
 #include "eval/loss.h"
 #include "model/ffm.h"
@@ -7,8 +7,12 @@
 
 namespace ftrl {
 
+using timer = std::chrono::steady_clock;
+
 FtrlOnline::FtrlOnline(const config_options &opt)
-    : PcTask(opt.thread_num, opt.cmd), n_threads(opt.thread_num) {
+    : PcTask(opt.thread_num, opt.cmd), n_epochs(opt.epoch) {
+  losses.resize(n_threads);
+  nums.resize(n_threads);
   if (opt.model_type == "LR") {
     model_ptr = std::make_shared<LR>(opt);
   } else if (opt.model_type == "FM") {
@@ -22,12 +26,45 @@ FtrlOnline::FtrlOnline(const config_options &opt)
   }
 
   if (opt.file_type == "libsvm") {
-    parser = std::make_shared<LibsvmParser>();
+    parser = std::make_unique<LibsvmParser>();
   } else if (opt.file_type == "libffm") {
-    parser = std::make_shared<FFMParser>();
+    parser = std::make_unique<FFMParser>();
   }
-  losses.resize(n_threads);
-  nums.resize(n_threads);
+  if (!opt.cmd) {
+    open_file(opt.train_path);
+    if (!opt.eval_path.empty()) {
+      evaluator = std::make_unique<Evaluator>(opt);
+      evaluator->open_file(opt.eval_path);
+    }
+  }
+}
+
+void FtrlOnline::train() {
+  if (!cmd) {
+    for (int i = 1; i <= n_epochs; i++) {
+      auto train_start = timer::now();
+      run();
+      rewind_file();
+      const double train_loss = get_loss();
+      const double train_time = utils::compute_time(train_start);
+      printf("epoch %d train time: %.4lfs, train loss: %.4lf\n", i, train_time, train_loss);
+      if (evaluator != nullptr) {
+        evaluate(i);
+      }
+    }
+  } else {
+    // todo: online learning
+  }
+}
+
+void FtrlOnline::evaluate(int epoch) {
+  auto start = timer::now();
+  evaluator->load_trained_model(model_ptr);
+  evaluator->run();
+  evaluator->rewind_file();
+  const double eval_loss = evaluator->get_loss();
+  auto eval_time = utils::compute_time(start);
+  printf("epoch %d eval time: %.4lfs, eval loss: %.4lf\n", epoch, eval_time, eval_loss);
 }
 
 void FtrlOnline::run_task(std::vector<std::string> &data_buffer, int t) {

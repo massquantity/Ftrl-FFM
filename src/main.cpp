@@ -2,7 +2,8 @@
 #include <ctime>
 #include <iostream>
 
-#include "task/ftrl_task.h"
+#include "task/ftrl_offline.h"
+#include "task/ftrl_online.h"
 #include "utils/cmd_option.h"
 
 int main(int argc, char *argv[]) {
@@ -18,7 +19,12 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);  // NOLINT
   }
 
-  ftrl::FtrlTask task(opt);
-  task.init();
-  task.train();
+  if (opt.online) {
+    ftrl::FtrlOnline task(opt);
+    task.train();
+  } else {
+    ftrl::FtrlOffline task(opt);
+    task.train();
+  }
+  return 0;
 }

@@ -1,4 +1,8 @@
-#include "model/ftrl_offline.h"
+#include "task/ftrl_offline.h"
+
+#include <cassert>
+#include <random>
+#include <thread>
 
 #include "eval/loss.h"
 #include "model/ffm.h"
@@ -7,20 +11,49 @@
 
 namespace ftrl {
 
-FtrlOffline::FtrlOffline(const config_options &opt) : n_threads(opt.thread_num) {
+using timer = std::chrono::steady_clock;
+
+FtrlOffline::FtrlOffline(const config_options &opt)
+    : n_epochs(opt.epoch), n_threads(opt.thread_num) {
   if (opt.model_type == "LR") {
-    model_ptr = std::make_shared<LR>(opt);
+    model_ptr = std::make_unique<LR>(opt);
   } else if (opt.model_type == "FM") {
-    model_ptr = std::make_shared<FM>(opt);
+    model_ptr = std::make_unique<FM>(opt);
   } else if (opt.model_type == "FFM") {
-    model_ptr = std::make_shared<FFM>(opt);
+    model_ptr = std::make_unique<FFM>(opt);
   } else {
     std::cout << "Invalid model_type: " << opt.model_type;
     std::cout << ", expect `LR`, `FM` or `FFM`." << std::endl;
     throw std::invalid_argument("invalid model_type");
   }
 
-  thread_pool = std::make_shared<ThreadPool>(n_threads);
+  train_data_loader = std::make_unique<Reader>(opt.file_type);
+  train_data_loader->load_from_file(opt.train_path, n_threads);
+  if (!opt.eval_path.empty()) {
+    eval_data_loader = std::make_unique<Reader>(opt.file_type);
+    eval_data_loader->load_from_file(opt.eval_path, n_threads);
+  }
+
+  thread_pool = std::make_unique<ThreadPool>(n_threads);
+}
+
+void FtrlOffline::train() {
+  for (int i = 1; i <= n_epochs; i++) {
+    auto train_start = timer::now();
+    const double train_loss = one_epoch(train_data_loader->data, true, true);
+    const double train_time = utils::compute_time(train_start);
+    printf("epoch %d train time: %.4lfs, train loss: %.4lf\n", i, train_time, train_loss);
+    if (eval_data_loader != nullptr) {
+      evaluate(i);
+    }
+  }
+}
+
+void FtrlOffline::evaluate(int epoch) {
+  auto eval_start = timer::now();
+  const double eval_loss = one_epoch(eval_data_loader->data, false, false);
+  const double eval_time = utils::compute_time(eval_start);
+  printf("epoch %d eval time: %.4lfs, eval loss: %.4lf\n", epoch, eval_time, eval_loss);
 }
 
 double FtrlOffline::one_epoch(std::vector<Sample> &samples, bool train, bool use_pool) {

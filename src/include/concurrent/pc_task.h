@@ -24,7 +24,7 @@ class PcTask {
   virtual void run_task(std::vector<std::string> &data_buffer, int t) = 0;
   virtual ~PcTask() = default;
 
- private:
+ protected:
   std::ifstream ifs;
   std::mutex buf_mutex;
   std::condition_variable pro_cv, con_cv;
