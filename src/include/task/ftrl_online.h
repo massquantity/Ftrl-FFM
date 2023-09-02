@@ -23,6 +23,7 @@ class FtrlOnline : public PcTask {
   double get_loss();
   [[maybe_unused]] bool load_model(std::ifstream &ifs);
   [[maybe_unused]] void output_model(std::ofstream &ofs);
+  bool has_zero_weights();
 
   std::shared_ptr<FtrlModel> model_ptr;
   std::unique_ptr<Evaluator> evaluator;

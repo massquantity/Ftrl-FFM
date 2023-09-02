@@ -20,6 +20,7 @@ class FtrlOffline {
   void train();
   void evaluate(int epoch = 0);
   double one_epoch(std::vector<Sample> &samples, bool train, bool use_pool);
+  bool has_zero_weights();
 
   std::unique_ptr<FtrlModel> model_ptr;
 

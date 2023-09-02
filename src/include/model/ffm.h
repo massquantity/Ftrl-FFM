@@ -17,10 +17,11 @@ class FFM : public FtrlModel {
   void update_vector_nz(const feat_vec &features, float tmp_grad);
   void remove_out_range(feat_vec &feats) override;
 
+  std::vector<std::vector<float>> vec_w;
+
  private:
   int n_fields;
   int n_factors;
-  std::vector<std::vector<float>> vec_w;
   std::vector<std::vector<float>> vec_w_n;
   std::vector<std::vector<float>> vec_w_z;
   std::vector<std::shared_mutex> vec_w_mutex;

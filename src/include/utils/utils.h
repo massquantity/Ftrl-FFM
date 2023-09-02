@@ -59,6 +59,21 @@ struct utils {
     return init_weights(num, v_size, mean, stddev);
   }
 
+  template <typename T>
+  static bool has_zero_weights(std::vector<T> &weights) {
+    return std::any_of(weights.cbegin(), weights.cend(), [](T w) { return w == 0.0; });
+  }
+
+  template <typename T>
+  static bool has_zero_weights(std::vector<std::vector<T>> &weights) {
+    for (auto &ws : weights) {
+      if (has_zero_weights(ws)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   using clock_time = std::chrono::time_point<std::chrono::steady_clock>;
   static constexpr int64 numerator = std::chrono::nanoseconds::period::num;
   static constexpr int64 denominator = std::chrono::nanoseconds::period::den;

@@ -16,10 +16,11 @@ class FM : public FtrlModel {
   void update_vector_w(const feat_vec &features);
   void update_vector_nz(const feat_vec &features, float tmp_grad);
 
+  std::vector<std::vector<float>> vec_w;
+
  private:
   int n_factors;
   std::vector<float> sum_vx;
-  std::vector<std::vector<float>> vec_w;
   std::vector<std::vector<float>> vec_w_n;
   std::vector<std::vector<float>> vec_w_z;
   std::vector<std::shared_mutex> vec_w_mutex;

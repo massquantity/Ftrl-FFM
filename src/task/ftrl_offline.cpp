@@ -1,5 +1,6 @@
 #include "task/ftrl_offline.h"
 
+#include <algorithm>
 #include <cassert>
 #include <random>
 #include <thread>
@@ -8,6 +9,7 @@
 #include "model/ffm.h"
 #include "model/fm.h"
 #include "model/lr.h"
+#include "utils/utils.h"
 
 namespace ftrl {
 
@@ -96,6 +98,22 @@ double FtrlOffline::one_epoch(std::vector<Sample> &samples, bool train, bool use
   }
   const double total_loss = std::accumulate(losses.begin(), losses.end(), 0.0);
   return total_loss / static_cast<double>(total_num);
+}
+
+bool FtrlOffline::has_zero_weights() {  // NOLINT
+  const bool has_linear_zero = utils::has_zero_weights<float>(model_ptr->lin_w);
+  auto &model = *model_ptr;
+  if (typeid(model) == typeid(LR)) {
+    return has_linear_zero;
+  } else {
+    if (typeid(model) == typeid(FM)) {
+      auto &vec_w = dynamic_cast<FM *>(model_ptr.get())->vec_w;
+      return has_linear_zero || utils::has_zero_weights(vec_w);
+    } else {
+      auto &vec_w = dynamic_cast<FFM *>(model_ptr.get())->vec_w;
+      return has_linear_zero || utils::has_zero_weights(vec_w);
+    }
+  }
 }
 
 }  // namespace ftrl

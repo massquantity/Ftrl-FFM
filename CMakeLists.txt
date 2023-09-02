@@ -8,8 +8,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")  # -fopenmp -pthread
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ./bin)
 
 add_subdirectory(src)
+add_subdirectory(tests)
+add_subdirectory(third_party)
 
 # find_package(Threads REQUIRED)
 # target_link_libraries(thread Threads::Threads)
 
-# include_directories(${PROJECT_SOURCE_DIR}/src/include)
+enable_testing()

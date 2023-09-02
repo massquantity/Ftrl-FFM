@@ -37,6 +37,8 @@ class FtrlModel {
   bool load_model(std::ifstream &ifs);
 
   ModelType model_type;
+  float bias;
+  std::vector<float> lin_w;
 
  protected:
   int n_feats;
@@ -44,10 +46,8 @@ class FtrlModel {
   float w_beta;
   float w_l1;
   float w_l2;
-  float bias;
   float bias_n;
   float bias_z;
-  std::vector<float> lin_w;
   std::vector<float> lin_w_n;
   std::vector<float> lin_w_z;
   std::vector<std::mutex> lin_w_mutex;

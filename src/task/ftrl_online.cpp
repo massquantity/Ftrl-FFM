@@ -101,4 +101,20 @@ double FtrlOnline::get_loss() {
   return model_ptr->output_model(ofs);
 }
 
+bool FtrlOnline::has_zero_weights() {
+  const bool has_linear_zero = utils::has_zero_weights<float>(model_ptr->lin_w);
+  auto &model = *model_ptr;
+  if (typeid(model) == typeid(LR)) {
+    return has_linear_zero;
+  } else {
+    if (typeid(model) == typeid(FM)) {
+      auto &vec_w = std::dynamic_pointer_cast<FM>(model_ptr)->vec_w;
+      return has_linear_zero || utils::has_zero_weights(vec_w);
+    } else {
+      auto &vec_w = std::dynamic_pointer_cast<FFM>(model_ptr)->vec_w;
+      return has_linear_zero || utils::has_zero_weights(vec_w);
+    }
+  }
+}
+
 }  // namespace ftrl
