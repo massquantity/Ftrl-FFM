@@ -1,10 +1,13 @@
 set(TEST_SOURCE_FILES
+        test_data.cpp
+        test_model.cpp
         test_task.cpp
         test_utils.cpp
 )
 
-foreach(test_source_file ${TEST_SOURCE_FILES})
+foreach(test_source_file IN LISTS TEST_SOURCE_FILES)
     get_filename_component(test_name ${test_source_file} NAME_WE)
+    MESSAGE(STATUS "Adding `${test_name}`")
 
     add_executable(${test_name} ${test_source_file})
     target_compile_options(${test_name} PRIVATE -O1)
