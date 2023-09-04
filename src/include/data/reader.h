@@ -16,8 +16,9 @@ class Reader {
  public:
   explicit Reader(const std::string &file_type);
   void load_from_file(std::string_view file_name, int n_threads);
-  [[maybe_unused]] [[nodiscard]] size_t getSize() const { return dataSize; }
-  size_t dataSize{0};
+  [[nodiscard]] size_t get_size() const { return data_size; }
+
+  size_t data_size{0};
   std::vector<Sample> data;
   std::shared_ptr<Parser> parser;
 

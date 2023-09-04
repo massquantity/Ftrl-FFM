@@ -85,7 +85,7 @@ void Reader::load_from_file(std::string_view file_name, int n_threads) {
     std::move(pd.cbegin(), pd.cend(), data.begin() + cur);  // NOLINT
     cur += pd.size();
   }
-  this->dataSize = total_size;
+  this->data_size = total_size;
   const double data_time = utils::compute_time(start);
   printf("parsing data time: %.4lfs\n", data_time);
 }

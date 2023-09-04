@@ -24,7 +24,9 @@ static config_options get_command_args() {
 
 TEST_CASE("ftrl online training has zero weights") {
   write_test_data(test_file_path);
-  ftrl::FtrlOnline online_task(get_command_args());
+  auto args = get_command_args();
+  args.online = true;
+  ftrl::FtrlOnline online_task(args);
   online_task.train();
   CHECK(online_task.has_zero_weights());
   remove_test_file(test_file_path);
@@ -32,7 +34,9 @@ TEST_CASE("ftrl online training has zero weights") {
 
 TEST_CASE("ftrl offline training has zero weights") {
   write_test_data(test_file_path);
-  ftrl::FtrlOffline offline_task(get_command_args());
+  auto args = get_command_args();
+  args.online = false;
+  ftrl::FtrlOffline offline_task(args);
   offline_task.train();
   CHECK(offline_task.has_zero_weights());
   remove_test_file(test_file_path);
