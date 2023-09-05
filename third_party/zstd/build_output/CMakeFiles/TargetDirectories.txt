@@ -1,0 +1,15 @@
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/CMakeFiles/clean-all.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/CMakeFiles/edit_cache.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/CMakeFiles/rebuild_cache.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/CMakeFiles/list_install_components.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/CMakeFiles/install.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/CMakeFiles/install/local.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/CMakeFiles/install/strip.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/lib/CMakeFiles/libzstd_static.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/lib/CMakeFiles/uninstall.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/lib/CMakeFiles/edit_cache.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/lib/CMakeFiles/rebuild_cache.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/lib/CMakeFiles/list_install_components.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/lib/CMakeFiles/install.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/lib/CMakeFiles/install/local.dir
+/home/massquantity/Workspace/network-programming/third_party/zstd/build_output/lib/CMakeFiles/install/strip.dir

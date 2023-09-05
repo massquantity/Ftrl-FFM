@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/massquantity/Workspace/network-programming/third_party/zstd/lib/common/portability_macros.h
+cet.h
+-
+
+/home/massquantity/Workspace/network-programming/third_party/zstd/lib/decompress/huf_decompress_amd64.S
+../common/portability_macros.h
+/home/massquantity/Workspace/network-programming/third_party/zstd/lib/common/portability_macros.h
+
