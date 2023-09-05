@@ -10,26 +10,32 @@
 #include <string_view>
 #include <vector>
 
+#include "utils//utils.h"
 #include "utils/types.h"
 
 // todo: change options
 static const constexpr std::string_view cmd_help =
-    "\nUsage: ./lr_train [<options>]   OR   cat sample | ./lr_train [<options>]"
+    "\nUsage: ./main [<options>]   OR   cat sample | ./main [<options>]"
     "\n"
     "\n"
     "options:\n"
     "-model_path <model_path>: set the output model path\n"
     "-train_data <data_path>: set the train data path\n"
     "-eval_data <data_path>: set the eval data path\n"
+    "-model_type <model_type>: LR, FM or FFM\n"
     "-init_mean <mean>: mean for parameter initialization\tdefault:0.0\n"
-    "-init_stddev <stddev>: stddev for parameter initialization\tdefault:0.01\n"
-    "-w_alpha <w_alpha>: alpha is one of the learning rate parameters\tdefault:0.1\n"
+    "-init_stddev <stddev>: stddev for parameter initialization\tdefault:0.02\n"
+    "-n_fields <n_fields>: number of fields in FFM\tdefault:8\n"
+    "-n_feats <n_feats>: number of total features\tdefault:10000\n"
+    "-n_factors <n_factors>: number of embed size in FM and FFM\tdefault:16\n"
+    "-w_alpha <w_alpha>: alpha is one of the learning rate parameters\tdefault:1e-4\n"
     "-w_beta <w_beta>: beta is one of the learning rate parameters\tdefault:1.0\n"
     "-w_l1 <w_L1_reg>: L1 regularization parameter of w\tdefault:0.1\n"
     "-w_l2 <w_L2_reg>: L2 regularization parameter of w\tdefault:5.0\n"
-    "-nthreads <threads_num>: set the number of threads\tdefault:1\n"
+    "-n_threads <threads_num>: set the number of threads\tdefault:1\n"
     "-epoch <epochs>: how many epochs to train\tdefault:1\n"
-    "-cmd <command line input>: whether to input data using command line\tdefault:false\n";
+    "-cmd <command line input>: whether to input data using command line\tdefault:false\n"
+    "-online <online>: whether to online training mode\tdefault:true\n";
 
 static std::vector<std::string> argv_to_args(int argc, char *argv[]) {
   std::vector<std::string> args;
@@ -50,17 +56,6 @@ static inline std::string upper(std::string arg) {
   return arg;
 }
 
-static inline void split_string(const std::string &line, const std::string &delimiter,
-                                std::vector<std::string> &v) {
-  std::string::size_type begin = line.find_first_not_of(delimiter, 0);
-  std::string::size_type end = line.find_first_of(delimiter, begin);
-  while (begin != std::string::npos || end != std::string::npos) {
-    v.push_back(line.substr(begin, end - begin));
-    begin = line.find_first_not_of(delimiter, end);
-    end = line.find_first_of(delimiter, begin);
-  }
-}
-
 static std::string detect_file_type(const std::string &file_path) {
   std::ifstream ifs(file_path);
   if (!ifs.good()) {
@@ -72,7 +67,7 @@ static std::string detect_file_type(const std::string &file_path) {
   ifs.close();
 
   std::vector<std::string> split_line;
-  split_string(line, " ", split_line);
+  utils::split_string(line, " ", split_line);
   const std::string_view example_feature = split_line[1];
   const int64 colon_count = std::count_if(example_feature.cbegin(), example_feature.cend(),
                                           [](const char c) { return c == ':'; });
