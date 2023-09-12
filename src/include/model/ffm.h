@@ -2,8 +2,9 @@
 #define FTRL_FFM_FFM_H
 
 #include <shared_mutex>
+#include <vector>
 
-#include "ftrl_model.h"
+#include "model/ftrl_model.h"
 
 namespace ftrl {
 
@@ -16,6 +17,10 @@ class FFM : public FtrlModel {
   void update_vector_w(const feat_vec &features);
   void update_vector_nz(const feat_vec &features, float tmp_grad);
   void remove_out_range(feat_vec &feats) override;
+  void save_compressed_model(std::string_view file_name, int compress_level);
+  void load_compressed_model(std::string_view file_name);
+  void save_model(std::string_view file_name);
+  void load_model(std::string_view file_name);
 
   std::vector<std::vector<float>> vec_w;
 

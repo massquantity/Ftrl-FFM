@@ -32,10 +32,6 @@ class FtrlModel {
                : -1.0 * (z - utils::sgn(z) * w_l1) / (w_l2 + (w_beta + std::sqrt(n)) / w_alpha);
   }
 
-  void output_model(std::ofstream &ofs);
-  [[maybe_unused]] void debug_print_model();
-  bool load_model(std::ifstream &ifs);
-
   ModelType model_type;
   float bias;
   std::vector<float> lin_w;

@@ -93,14 +93,6 @@ double FtrlOnline::get_loss() {
   return total_loss / static_cast<double>(total_num);
 }
 
-[[maybe_unused]] bool FtrlOnline::load_model(std::ifstream &ifs) {
-  return model_ptr->load_model(ifs);
-}
-
-[[maybe_unused]] void FtrlOnline::output_model(std::ofstream &ofs) {
-  return model_ptr->output_model(ofs);
-}
-
 bool FtrlOnline::has_zero_weights() {
   const bool has_linear_zero = utils::has_zero_weights<float>(model_ptr->lin_w);
   auto &model = *model_ptr;

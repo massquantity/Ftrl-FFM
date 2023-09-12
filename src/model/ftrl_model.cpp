@@ -1,10 +1,6 @@
 #include "model/ftrl_model.h"
 
 #include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <sstream>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -86,41 +82,6 @@ void FtrlModel::update_bias_nz(float tmp_grad) {
   const float si = (sqrtf(bias_n + gi * gi) - sqrtf(bias_n)) / w_alpha;
   bias_z += gi - si * bias;
   bias_n += gi * gi;
-}
-
-void FtrlModel::output_model(std::ofstream &ofs) {
-  std::ostringstream ost;
-  ost << "bias " << bias << std::endl;
-  int i = 0;
-  for (auto &w : lin_w) {
-    ost << i << " " << w << std::endl;
-    i++;
-  }
-  ofs << ost.str();
-}
-
-[[maybe_unused]] void FtrlModel::debug_print_model() {
-  // std::cout << "bias " << *model_bias << std::endl;
-  // for (auto &iter : model_weight) {
-  //  std::cout << iter.first << " " << *(iter.second) << std::endl;
-  // }
-}
-
-bool FtrlModel::load_model(std::ifstream &ifs) {
-  /*
-  std::string line;
-  if (!getline(ifs, line))  // first get bias
-    return false;
-  std::vector<std::string> vec;
-  utils::splitString(line, " ", vec);
-  model_bias = std::make_shared<ftrl_model_unit>(vec[1]);
-  while (getline(ifs, line)) {
-    vec.clear();
-    utils::split_string(line, " ", vec);
-    int index = stoi(vec[0]);
-    model_weight[index] = std::make_shared<ftrl_model_unit>(vec[1]);
-  } */
-  return true;
 }
 
 }  // namespace ftrl

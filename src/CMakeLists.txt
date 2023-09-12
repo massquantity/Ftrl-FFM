@@ -1,3 +1,4 @@
+add_subdirectory(compression)
 add_subdirectory(concurrent)
 add_subdirectory(data)
 add_subdirectory(eval)

@@ -21,8 +21,6 @@ class FtrlOnline : public PcTask {
   void evaluate(int epoch = 0);
   void run_task(std::vector<std::string> &data_buffer, int t) override;
   double get_loss();
-  [[maybe_unused]] bool load_model(std::ifstream &ifs);
-  [[maybe_unused]] void output_model(std::ofstream &ofs);
   bool has_zero_weights();
 
   std::shared_ptr<FtrlModel> model_ptr;

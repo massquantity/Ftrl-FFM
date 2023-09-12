@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <numeric>
+#include <sstream>
 #include <utility>
 
+#include "compression/compress.h"
 #include "utils/utils.h"
 
 namespace ftrl {
@@ -125,6 +127,76 @@ void FFM::update_vector_nz(const feat_vec &features, float tmp_grad) {
         std::move(zi2.cbegin(), zi2.cend(), vec_w_z[j].begin() + field1 * n_factors);
         std::move(ni2.cbegin(), ni2.cend(), vec_w_n[j].begin() + field1 * n_factors);
       }
+    }
+  }
+}
+
+void FFM::save_compressed_model(std::string_view file_name, int compress_level) {
+  std::vector<float> weights{bias};
+  weights.insert(weights.end(), lin_w.begin(), lin_w.end());
+  for (const auto &v : vec_w) {
+    weights.insert(weights.end(), v.cbegin(), v.cend());
+  }
+  const size_t weight_size = weights.size() * sizeof(float);
+  compress_weights(weights.data(), weight_size, file_name, compress_level);
+}
+
+void FFM::load_compressed_model(std::string_view file_name) {
+  float *buffer_ptr = decompress_weights(file_name);
+  bias = buffer_ptr[0];
+  float *offset = buffer_ptr + 1;
+  std::move(offset, offset + lin_w.size(), lin_w.data());
+  offset += lin_w.size();
+  for (auto &v : vec_w) {
+    std::move(offset, offset + v.size(), v.data());
+    offset += v.size();
+  }
+  free(buffer_ptr);
+}
+
+void FFM::save_model(std::string_view file_name) {
+  std::ostringstream ost;
+  ost << bias << std::endl;
+  for (auto &w : lin_w) {
+    ost << w << std::endl;
+  }
+  for (auto &v : vec_w) {
+    for (auto &i : v) {
+      ost << i << " ";
+    }
+    ost << std::endl;
+  }
+
+  std::ofstream ofs(file_name.data());
+  if (!ofs.good()) {
+    std::cerr << "Failed to open saving file " << file_name << std::endl;
+    exit(EXIT_FAILURE);  // NOLINT
+  }
+  ofs << ost.str();
+}
+
+void FFM::load_model(std::string_view file_name) {
+  std::ifstream ifs(file_name.data());
+  if (!ifs.good()) {
+    std::cerr << "Failed to open loading file " << file_name << std::endl;
+    exit(EXIT_FAILURE);  // NOLINT
+  }
+
+  std::string line;
+  std::getline(ifs, line);
+  bias = std::stof(line);
+  for (size_t i = 0; i < n_feats; i++) {
+    std::getline(ifs, line);
+    lin_w[i] = std::stof(line);
+  }
+
+  std::vector<std::string> split_line;
+  for (size_t i = 0; i < n_feats; i++) {
+    split_line.clear();
+    std::getline(ifs, line);
+    utils::split_string(line, " ", split_line);
+    for (size_t j = 0; j < n_fields * n_factors; j++) {
+      vec_w[i][j] = std::stof(split_line[j]);
     }
   }
 }

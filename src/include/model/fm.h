@@ -2,8 +2,9 @@
 #define FTRL_FFM_FM_H
 
 #include <shared_mutex>
+#include <vector>
 
-#include "ftrl_model.h"
+#include "model/ftrl_model.h"
 
 namespace ftrl {
 
