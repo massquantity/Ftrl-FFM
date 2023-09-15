@@ -1,8 +1,8 @@
 #include "compression/compress.h"
 
-#include <zstd.h>
-
 #include <cstdlib>
+
+#include <zstd.h>
 
 #include "utils/types.h"
 
