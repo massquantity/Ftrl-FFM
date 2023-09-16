@@ -1,4 +1,4 @@
-#include "compression/file_ops.h"
+#include "file_ops.h"
 
 size_t fsize_orDie(const char *filename) {
   struct stat st;

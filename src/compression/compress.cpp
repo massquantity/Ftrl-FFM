@@ -7,7 +7,7 @@
 #include "utils/types.h"
 
 extern "C" {
-#include "compression/file_ops.h"
+#include "file_ops.h"
 }
 
 namespace ftrl {
