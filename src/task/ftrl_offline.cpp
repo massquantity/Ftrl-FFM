@@ -2,8 +2,11 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdio>
 #include <random>
 #include <thread>
+
+#include <fmt/core.h>
 
 #include "eval/loss.h"
 #include "model/ffm.h"
@@ -24,8 +27,7 @@ FtrlOffline::FtrlOffline(const config_options &opt)
   } else if (opt.model_type == "FFM") {
     model_ptr = std::make_unique<FFM>(opt);
   } else {
-    std::cout << "Invalid model_type: " << opt.model_type;
-    std::cout << ", expect `LR`, `FM` or `FFM`." << std::endl;
+    fmt::println(stderr, "Invalid model_type: {}, expect `LR`, `FM` or `FFM`.", opt.model_type);
     throw std::invalid_argument("invalid model_type");
   }
 

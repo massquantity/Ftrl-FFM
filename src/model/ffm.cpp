@@ -1,9 +1,13 @@
 #include "model/ffm.h"
 
 #include <algorithm>
+#include <fstream>
 #include <numeric>
 #include <sstream>
 #include <utility>
+
+#include <fmt/os.h>
+#include <fmt/ranges.h>
 
 #include "compression/compress.h"
 #include "utils/utils.h"
@@ -161,24 +165,18 @@ void FFM::save_model(std::string_view file_name) {
     ost << w << std::endl;
   }
   for (auto &v : vec_w) {
-    for (auto &i : v) {
-      ost << i << " ";
-    }
-    ost << std::endl;
+    ost << fmt::format("{}\n", fmt::join(v, " "));
   }
 
-  std::ofstream ofs(file_name.data());
-  if (!ofs.good()) {
-    std::cerr << "Failed to open saving file " << file_name << std::endl;
-    exit(EXIT_FAILURE);  // NOLINT
-  }
-  ofs << ost.str();
+  fmt::ostream out = fmt::output_file(file_name.data());
+  out.print(ost.str());
+  out.close();
 }
 
 void FFM::load_model(std::string_view file_name) {
   std::ifstream ifs(file_name.data());
   if (!ifs.good()) {
-    std::cerr << "Failed to open loading file " << file_name << std::endl;
+    fmt::println(stderr, "Failed to open loading file {}", file_name);
     exit(EXIT_FAILURE);  // NOLINT
   }
 

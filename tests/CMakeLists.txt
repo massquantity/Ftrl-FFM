@@ -17,7 +17,7 @@ foreach(test_source_file IN LISTS TEST_SOURCE_FILES)
     if(NOT ${LINK_LIB} STREQUAL utils)
         target_link_libraries(${test_name} PRIVATE ${LINK_LIB})
     endif()
-    target_link_libraries(${test_name} PRIVATE doctest)
+    target_link_libraries(${test_name} PRIVATE doctest fmt::fmt)
     target_include_directories(${test_name} PRIVATE ${CMAKE_SOURCE_DIR}/src/include)
 
     add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)

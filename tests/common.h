@@ -5,6 +5,8 @@
 #include <fstream>
 #include <string_view>
 
+#include <fmt/core.h>
+
 namespace ftrl {
 
 const std::string_view test_file_path = "./test_file.txt";
@@ -33,9 +35,9 @@ void write_test_data(std::string_view file_path) {
 
 void remove_test_file(std::string_view file_path) {
   if (std::remove(file_path.data()) != 0) {
-    std::cerr << "Failed to remove file " << file_path << std::endl;
+    fmt::println(stderr, "Failed to remove file {}", file_path);
   } else {
-    std::cout << "Test file removed!" << std::endl;
+    fmt::println(stdout, "Test file  {} removed!", file_path);
   }
 }
 
