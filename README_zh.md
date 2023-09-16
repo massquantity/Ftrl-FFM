@@ -20,6 +20,13 @@
 ```shell
 $ git clone https://github.com/massquantity/Ftrl-FFM.git
 $ cd Ftrl-FFM
+# build zstd library first
+$ cmake -S third_party/zstd/build/cmake -B third_party/zstd/build_output
+$ cmake --build third_party/zstd/build_output -j 8
+```
+
+```shell
+# build the project
 $ mkdir build && cd build
 $ cmake ..
 $ make -j8
