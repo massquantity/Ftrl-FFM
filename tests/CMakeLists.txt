@@ -19,6 +19,6 @@ foreach(test_source_file IN LISTS TEST_SOURCE_FILES)
     endif()
     target_link_libraries(${test_name} PRIVATE doctest)
     target_include_directories(${test_name} PRIVATE ${CMAKE_SOURCE_DIR}/src/include)
-endforeach()
 
-# add_test(test_all tests_utils)
+    add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)
+endforeach()

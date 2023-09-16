@@ -14,11 +14,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")  # -fopenmp -pthread
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 MESSAGE(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 
+include(CTest)
+enable_testing()
+
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(third_party)
 
 # find_package(Threads REQUIRED)
 # target_link_libraries(thread Threads::Threads)
-
-enable_testing()
