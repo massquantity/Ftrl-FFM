@@ -4,6 +4,7 @@ add_subdirectory(data)
 add_subdirectory(eval)
 add_subdirectory(model)
 add_subdirectory(task)
+add_subdirectory(utils)
 
 add_executable(main main.cpp)
 
@@ -13,6 +14,7 @@ set(LINK_LIBS
         eval
         model
         task
+        utils
 )
 
 target_link_libraries(main PRIVATE ${LINK_LIBS})
@@ -29,3 +31,5 @@ if (ZSTD_FOUND)
 else()
     message(FATAL_ERROR "Zstd library not found")
 endif()
+
+target_link_libraries(main PRIVATE fmt::fmt)
